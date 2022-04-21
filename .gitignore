@@ -1,0 +1,10 @@
+/.idea/
+/.php_cs.cache
+/.phpunit.result.cache
+/composer.lock
+/coverage.xml
+/phpbench.json
+/phpcs.xml
+/phpunit.xml
+/psalm.xml
+/vendor/

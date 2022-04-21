@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<ruleset name="SergiX44 Coding Standard">
+    <rule ref="./vendor/SergiX44/coding-standard/ruleset.xml"/>
+
+    <file>src</file>
+    <file>tests</file>
+</ruleset>
