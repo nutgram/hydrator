@@ -1,7 +1,6 @@
 <?php
 
 
-
 namespace SergiX44\Hydrator;
 
 /**
@@ -18,7 +17,7 @@ interface HydratorInterface
      *
      * @return object
      */
-    public function hydrate($object, $data) : object;
+    public function hydrate(string|object $object, array|object $data): object;
 
     /**
      * Hydrates the given object with the given JSON
@@ -29,5 +28,5 @@ interface HydratorInterface
      *
      * @return object
      */
-    public function hydrateWithJson($object, string $json, ?int $flags) : object;
+    public function hydrateWithJson(string|object $object, string $json, ?int $flags) : object;
 }

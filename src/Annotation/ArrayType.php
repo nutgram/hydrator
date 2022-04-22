@@ -22,7 +22,7 @@ use Attribute;
  * })
  */
 #[Attribute(Attribute::TARGET_PROPERTY)]
-final class Alias
+final class ArrayType
 {
 
     /**
@@ -30,15 +30,15 @@ final class Alias
      *
      * @var string
      */
-    public string $value;
+    public string $class;
 
     /**
      * Constructor of the class
      *
-     * @param string $value
+     * @param string $class
      */
-    public function __construct(string $value)
+    public function __construct(string $class)
     {
-        $this->value = $value;
+        $this->class = $class;
     }
 }

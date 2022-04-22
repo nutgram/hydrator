@@ -4,10 +4,6 @@
 
 namespace SergiX44\Hydrator\Exception;
 
-/**
- * Import classes
- */
-
 use RuntimeException;
 
 /**

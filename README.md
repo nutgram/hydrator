@@ -17,7 +17,7 @@ $hydrator = new Hydrator();
 
 // disable support for alias mechanism
 // available since version v2.5.0
-$hydrator->aliasSupport(false);
+$hydrator->useAliases(false);
 
 // enable support for annotations
 // for php8 it is recommended to use attributes

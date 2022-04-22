@@ -7,6 +7,7 @@ use PHPUnit\Framework\TestCase;
 use SergiX44\Hydrator\Exception;
 use SergiX44\Hydrator\Hydrator;
 use SergiX44\Hydrator\HydratorInterface;
+use TypeError;
 
 class HydratorTest extends TestCase
 {
@@ -37,9 +38,7 @@ class HydratorTest extends TestCase
 
     public function testInvalidData() : void
     {
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('The ' . Hydrator::class . '::hydrate(data) parameter ' .
-                                      'expects an associative array or object.');
+        $this->expectException(TypeError::class);
 
         (new Hydrator)->hydrate(Fixtures\ObjectWithString::class, null);
     }
@@ -81,36 +80,6 @@ class HydratorTest extends TestCase
         (new Hydrator)->hydrate(Fixtures\ObjectWithIntOrFloat::class, []);
     }
 
-    public function testHydrateAnnotatedProperty() : void
-    {
-        $object = (new Hydrator)
-            ->useAnnotations()
-            ->hydrate(Fixtures\ObjectWithAnnotatedAlias::class, ['non-normalized-value' => 'foo']);
-
-        $this->assertSame('foo', $object->value);
-    }
-
-    public function testHydrateAnnotatedPropertyUsingNormalizedKey() : void
-    {
-        $object = (new Hydrator)
-            ->useAnnotations()
-            ->hydrate(Fixtures\ObjectWithAnnotatedAlias::class, ['value' => 'foo']);
-
-        $this->assertSame('foo', $object->value);
-    }
-
-    public function testHydrateAnnotatedPropertyWhenDisabledAliasSupport() : void
-    {
-        $this->expectException(Exception\MissingRequiredValueException::class);
-        $this->expectExceptionMessage('The ObjectWithAnnotatedAlias.value property ' .
-                                      'is required.');
-
-        (new Hydrator)
-            ->useAnnotations()
-            ->aliasSupport(false)
-            ->hydrate(Fixtures\ObjectWithAnnotatedAlias::class, ['non-normalized-value' => 'foo']);
-    }
-
     public function testHydrateAnnotatedPropertyWhenDisabledAnnotations() : void
     {
         $this->expectException(Exception\MissingRequiredValueException::class);
@@ -140,21 +109,6 @@ class HydratorTest extends TestCase
         $object = (new Hydrator)->hydrate(Fixtures\ObjectWithAttributedAlias::class, ['value' => 'foo']);
 
         $this->assertSame('foo', $object->value);
-    }
-
-    public function testHydrateAttributedPropertyWhenDisabledAliasSupport() : void
-    {
-        if (\PHP_MAJOR_VERSION < 8) {
-            $this->markTestSkipped('php >= 8 is required.');
-        }
-
-        $this->expectException(Exception\MissingRequiredValueException::class);
-        $this->expectExceptionMessage('The ObjectWithAttributedAlias.value property ' .
-                                      'is required.');
-
-        (new Hydrator)
-            ->aliasSupport(false)
-            ->hydrate(Fixtures\ObjectWithAttributedAlias::class, ['non-normalized-value' => 'foo']);
     }
 
     public function testRequiredProperty() : void
