@@ -211,7 +211,7 @@ class Hydrator implements HydratorInterface
      *
      * @template T
      * @param ReflectionProperty $property
-     * @param class-string $class <T>
+     * @param class-string<T> $class
      *
      * @return T|null
      */
