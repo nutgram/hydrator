@@ -7,6 +7,7 @@ use PHPUnit\Framework\TestCase;
 use SergiX44\Hydrator\Exception;
 use SergiX44\Hydrator\Hydrator;
 use SergiX44\Hydrator\HydratorInterface;
+use SergiX44\Hydrator\Tests\Fixtures\Store\Tag;
 use TypeError;
 
 class HydratorTest extends TestCase
@@ -299,6 +300,21 @@ class HydratorTest extends TestCase
         $object = (new Hydrator)->hydrate(Fixtures\ObjectWithArray::class, ['value' => ['foo']]);
 
         $this->assertSame(['foo'], $object->value);
+    }
+
+    public function testHydrateTypedArrayableProperty() : void
+    {
+        $object = (new Hydrator)->hydrate(Fixtures\ObjectWithTypedArray::class, ['value' => [
+            ['name' => 'foo'],
+            ['name' => 'bar'],
+        ]]);
+
+        $this->assertIsArray($object->value);
+        $this->assertInstanceOf(Tag::class, $object->value[0]);
+        $this->assertInstanceOf(Tag::class, $object->value[1]);
+
+        $this->assertSame('foo', $object->value[0]->name);
+        $this->assertSame('bar', $object->value[1]->name);
     }
 
     public function testHydrateArrayablePropertyWithInvalidValue() : void
