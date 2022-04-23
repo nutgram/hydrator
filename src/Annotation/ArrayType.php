@@ -47,6 +47,12 @@ final class ArrayType
      */
     public function getInstance()
     {
-        return (new ReflectionClass($this->class))->newInstance();
+        $class = new ReflectionClass($this->class);
+
+        if ($class->getConstructor()?->getNumberOfRequiredParameters() > 0) {
+            return $class->newInstanceWithoutConstructor();
+        }
+
+        return $class->newInstance();
     }
 }
