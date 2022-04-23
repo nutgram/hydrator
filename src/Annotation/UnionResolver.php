@@ -13,27 +13,27 @@ use Attribute;
  * @NamedArgumentConstructor
  *
  * @Attributes({
- *   @Attribute("value", type="string", required=true),
+ *   @Attribute("class", type="class-string", required=true),
  * })
  */
 #[Attribute(Attribute::TARGET_PROPERTY)]
-final class Alias
+final class UnionResolver
 {
 
     /**
      * The attribute value
      *
-     * @var string
+     * @var class-string
      */
-    public string $value;
+    public string $class;
 
     /**
      * Constructor of the class
      *
-     * @param string $value
+     * @param class-string $class
      */
-    public function __construct(string $value)
+    public function __construct(string $class)
     {
-        $this->value = $value;
+        $this->class = $class;
     }
 }

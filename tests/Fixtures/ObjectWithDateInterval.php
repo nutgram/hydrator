@@ -1,7 +1,6 @@
 <?php
 
 
-
 namespace SergiX44\Hydrator\Tests\Fixtures;
 
 use DateInterval;
