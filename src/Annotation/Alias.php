@@ -1,12 +1,7 @@
 <?php
 
 
-
 namespace SergiX44\Hydrator\Annotation;
-
-/**
- * Import classes
- */
 
 use Attribute;
 

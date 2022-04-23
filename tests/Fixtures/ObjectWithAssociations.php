@@ -1,10 +1,12 @@
 <?php
 
 
-
 namespace SergiX44\Hydrator\Tests\Fixtures;
+
+use SergiX44\Hydrator\Annotation\ArrayType;
 
 final class ObjectWithAssociations
 {
-    public ObjectWithStringCollection $value;
+    #[ArrayType(ObjectWithString::class)]
+    public array $value;
 }

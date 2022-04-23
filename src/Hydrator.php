@@ -3,10 +3,6 @@
 
 namespace SergiX44\Hydrator;
 
-/**
- * Import classes
- */
-
 use BackedEnum;
 use DateInterval;
 use DateTime;
@@ -39,9 +35,7 @@ use const FILTER_VALIDATE_BOOLEAN;
 use const FILTER_VALIDATE_FLOAT;
 use const FILTER_VALIDATE_INT;
 
-/**
- * Hydrator
- */
+
 class Hydrator implements HydratorInterface
 {
 
@@ -275,9 +269,6 @@ class Hydrator implements HydratorInterface
 
             PHP_VERSION_ID >= 80100 && is_subclass_of($propertyType, BackedEnum::class) => $this->propertyBackedEnum($object, $class, $property, $type, $value),
 
-            // TODO replace with php8 attributes
-            is_subclass_of($propertyType, ObjectCollectionInterface::class) => $this->hydratePropertyWithManyAssociations($object, $class, $property, $type, $value),
-
             class_exists($propertyType) => $this->propertyFromInstance($object, $class, $property, $type, $value),
 
             default => throw new Exception\UnsupportedPropertyTypeException(sprintf(
@@ -497,6 +488,10 @@ class Hydrator implements HydratorInterface
         mixed               $value
     ): void
     {
+        if (is_object($value)) {
+            $value = get_object_vars($value);
+        }
+
         if (!is_array($value)) {
             throw new Exception\InvalidValueException($property, sprintf(
                 'The %s.%s property expects an array.',
@@ -574,26 +569,19 @@ class Hydrator implements HydratorInterface
         /** @var class-string<DateTime|DateTimeImmutable> */
         $className = $type->getName();
 
-        if (is_int($value)) {
-            $property->setValue($object, (new $className)->setTimestamp($value));
-            return;
-        }
+        $property->setValue($object, match (true) {
+            is_int($value) => (new $className)->setTimestamp($value),
 
-        if (is_string($value) && ctype_digit($value)) {
-            $property->setValue($object, (new $className)->setTimestamp((int)$value));
-            return;
-        }
+            is_string($value) && ctype_digit($value) => (new $className)->setTimestamp((int)$value),
 
-        if (is_string($value) && false !== strtotime($value)) {
-            $property->setValue($object, new $className($value));
-            return;
-        }
+            is_string($value) && false !== strtotime($value) => new $className($value),
 
-        throw new Exception\InvalidValueException($property, sprintf(
-            'The %s.%s property expects a valid date-time string or timestamp.',
-            $class->getShortName(),
-            $property->getName()
-        ));
+            default => throw new Exception\InvalidValueException($property, sprintf(
+                'The %s.%s property expects a valid date-time string or timestamp.',
+                $class->getShortName(),
+                $property->getName()
+            ))
+        });
     }
 
     /**
@@ -736,53 +724,5 @@ class Hydrator implements HydratorInterface
         }
 
         $property->setValue($object, $this->hydrate($type->getName(), $value));
-    }
-
-    /**
-     * Hydrates the given property with the given many associations
-     *
-     * @param object $object
-     * @param ReflectionClass $class
-     * @param ReflectionProperty $property
-     * @param ReflectionNamedType $type
-     * @param mixed $value
-     *
-     * @return void
-     *
-     * @throws Exception\InvalidValueException
-     *         If the given value isn't valid.
-     */
-    private function hydratePropertyWithManyAssociations(
-        object              $object,
-        ReflectionClass     $class,
-        ReflectionProperty  $property,
-        ReflectionNamedType $type,
-        mixed               $value
-    ): void
-    {
-        if (!is_array($value) && !is_object($value)) {
-            throw new Exception\InvalidValueException($property, sprintf(
-                'The %s.%s property expects an associative array or object.',
-                $class->getShortName(),
-                $property->getName()
-            ));
-        }
-
-        $className = $type->getName();
-        $collection = new $className();
-        foreach ($value as $key => $child) {
-            if (!is_array($child) && !is_object($child)) {
-                throw new Exception\InvalidValueException($property, sprintf(
-                    'The %s.%s[%s] property expects an associative array or object.',
-                    $class->getShortName(),
-                    $property->getName(),
-                    $key
-                ));
-            }
-
-            $collection->add($key, $this->hydrate($collection->getItemClassName(), $child));
-        }
-
-        $property->setValue($object, $collection);
     }
 }

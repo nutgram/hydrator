@@ -4,7 +4,6 @@
 namespace SergiX44\Hydrator\Annotation;
 
 use Attribute;
-use ReflectionClass;
 
 /**
  * @Annotation
@@ -18,7 +17,7 @@ use ReflectionClass;
  * })
  */
 #[Attribute(Attribute::TARGET_PROPERTY)]
-final class ArrayType
+final class UnionResolver
 {
 
     /**
@@ -36,19 +35,5 @@ final class ArrayType
     public function __construct(string $class)
     {
         $this->class = $class;
-    }
-
-    /**
-     * @throws \ReflectionException
-     */
-    public function getInstance()
-    {
-        $class = new ReflectionClass($this->class);
-
-        if ($class->getConstructor()?->getNumberOfRequiredParameters() > 0) {
-            return $class->newInstanceWithoutConstructor();
-        }
-
-        return $class->newInstance();
     }
 }

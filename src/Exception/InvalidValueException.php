@@ -1,24 +1,13 @@
 <?php
 
 
-
 namespace SergiX44\Hydrator\Exception;
 
-/**
- * Import classes
- */
 
 use ReflectionProperty;
 use Throwable;
 use function sprintf;
 
-/**
- * Import functions
- */
-
-/**
- * InvalidValueException
- */
 class InvalidValueException extends HydrationException
 {
 
@@ -33,16 +22,17 @@ class InvalidValueException extends HydrationException
      * Constructor of the class
      *
      * @param ReflectionProperty $property
-     * @param string             $message
-     * @param int                $code
-     * @param Throwable|null     $previous
+     * @param string $message
+     * @param int $code
+     * @param Throwable|null $previous
      */
     public function __construct(
         ReflectionProperty $property,
-        string $message,
-        int $code = 0,
-        ?Throwable $previous = null
-    ) {
+        string             $message,
+        int                $code = 0,
+        ?Throwable         $previous = null
+    )
+    {
         parent::__construct($message, $code, $previous);
 
         $property->setAccessible(false);
@@ -54,7 +44,7 @@ class InvalidValueException extends HydrationException
      *
      * @return ReflectionProperty
      */
-    final public function getProperty() : ReflectionProperty
+    final public function getProperty(): ReflectionProperty
     {
         return $this->property;
     }
@@ -64,7 +54,7 @@ class InvalidValueException extends HydrationException
      *
      * @return string
      */
-    final public function getPropertyPath() : string
+    final public function getPropertyPath(): string
     {
         return sprintf('%s.%s', $this->property->getDeclaringClass()->getShortName(), $this->property->getName());
     }
