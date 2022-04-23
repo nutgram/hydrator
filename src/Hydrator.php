@@ -15,6 +15,7 @@ use ReflectionProperty;
 use ReflectionUnionType;
 use SergiX44\Hydrator\Annotation\Alias;
 use SergiX44\Hydrator\Annotation\ArrayType;
+use SergiX44\Hydrator\Annotation\UnionResolver;
 use function array_key_exists;
 use function class_exists;
 use function ctype_digit;
@@ -76,26 +77,18 @@ class Hydrator implements HydratorInterface
         $object = $this->initializeObject($object);
 
         $class = new ReflectionClass($object);
-        $properties = $class->getProperties();
-        foreach ($properties as $property) {
+        foreach ($class->getProperties() as $property) {
             // statical properties cannot be hydrated...
             if ($property->isStatic()) {
                 continue;
             }
 
             $property->setAccessible(true);
+            $propertyType = $property->getType();
 
-            if (!$property->hasType()) {
+            if ($propertyType === null) {
                 throw new Exception\UntypedPropertyException(sprintf(
                     'The %s.%s property is not typed.',
-                    $class->getShortName(),
-                    $property->getName()
-                ));
-            }
-
-            if ($property->getType() instanceof ReflectionUnionType) {
-                throw new Exception\UnsupportedPropertyTypeException(sprintf(
-                    'The %s.%s property contains an union type that is not supported.',
                     $class->getShortName(),
                     $property->getName()
                 ));
@@ -107,6 +100,20 @@ class Hydrator implements HydratorInterface
                 $alias = $this->getPropertyAttribute($property, Alias::class);
                 if (isset($alias)) {
                     $key = $alias->value;
+                }
+            }
+
+            if ($propertyType instanceof ReflectionUnionType) {
+                /** @var UnionResolver $resolver */
+                $resolver = $this->getPropertyAttribute($property, UnionResolver::class);
+                if (isset($resolver)) {
+                    $propertyType = $resolver->resolve($propertyType, $data[$key]);
+                } else {
+                    throw new Exception\UnsupportedPropertyTypeException(sprintf(
+                        'The %s.%s property contains an union type that is not supported.',
+                        $class->getShortName(),
+                        $property->getName()
+                    ));
                 }
             }
 
@@ -122,7 +129,7 @@ class Hydrator implements HydratorInterface
                 continue;
             }
 
-            $this->hydrateProperty($object, $class, $property, $property->getType(), $data[$key]);
+            $this->hydrateProperty($object, $class, $property, $propertyType, $data[$key]);
         }
 
         return $object;
