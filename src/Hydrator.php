@@ -18,6 +18,7 @@ use ReflectionNamedType;
 use ReflectionProperty;
 use ReflectionUnionType;
 use SergiX44\Hydrator\Annotation\Alias;
+use SergiX44\Hydrator\Annotation\ArrayType;
 use function array_key_exists;
 use function class_exists;
 use function ctype_digit;
@@ -108,7 +109,8 @@ class Hydrator implements HydratorInterface
 
             $key = $property->getName();
             if (!array_key_exists($key, $data)) {
-                $alias = $this->getPropertyAlias($property);
+                /** @var Alias $alias */
+                $alias = $this->getPropertyAttribute($property, Alias::class);
                 if (isset($alias)) {
                     $key = $alias->value;
                 }
@@ -208,13 +210,15 @@ class Hydrator implements HydratorInterface
     /**
      * Gets an alias for the given property
      *
+     * @template T
      * @param ReflectionProperty $property
+     * @param class-string $class <T>
      *
-     * @return Alias|null
+     * @return T|null
      */
-    private function getPropertyAlias(ReflectionProperty $property): ?Alias
+    private function getPropertyAttribute(ReflectionProperty $property, string $class): mixed
     {
-        $attributes = $property->getAttributes(Alias::class);
+        $attributes = $property->getAttributes($class);
         if (isset($attributes[0])) {
             return $attributes[0]->newInstance();
         }
@@ -499,6 +503,14 @@ class Hydrator implements HydratorInterface
                 $class->getShortName(),
                 $property->getName()
             ));
+        }
+
+        /** @var ArrayType $arrayType */
+        $arrayType = $this->getPropertyAttribute($property, ArrayType::class);
+        if ($arrayType !== null) {
+            $value = array_map(function ($child) use ($arrayType) {
+                return $this->hydrate($arrayType->getInstance(), $child);
+            }, $value);
         }
 
         $property->setValue($object, $value);

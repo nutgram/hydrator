@@ -1,7 +1,6 @@
 <?php
 
 
-
 namespace SergiX44\Hydrator\Annotation;
 
 /**
@@ -9,6 +8,7 @@ namespace SergiX44\Hydrator\Annotation;
  */
 
 use Attribute;
+use ReflectionClass;
 
 /**
  * @Annotation
@@ -40,5 +40,19 @@ final class ArrayType
     public function __construct(string $class)
     {
         $this->class = $class;
+    }
+
+    /**
+     * @throws \ReflectionException
+     */
+    public function getInstance()
+    {
+        $class = new ReflectionClass($this->class);
+
+        if ($class->getConstructor()?->getNumberOfRequiredParameters() > 0) {
+            return $class->newInstanceWithoutConstructor();
+        }
+
+        return $class->newInstance();
     }
 }
