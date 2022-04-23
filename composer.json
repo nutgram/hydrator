@@ -4,8 +4,7 @@
     "description": "Hydrator for PHP 8.0+",
     "license": "MIT",
     "keywords": [
-        "fenric",
-        "SergiX44",
+        "dto",
         "hydrator",
         "data-mapper",
         "mapper",
@@ -42,13 +41,7 @@
     },
     "scripts": {
         "test": [
-            "phpcs",
-            "psalm",
             "XDEBUG_MODE=coverage phpunit --coverage-text --colors=always"
-        ],
-        "build": [
-            "phpdoc -d src/ -t phpdoc/",
-            "XDEBUG_MODE=coverage phpunit --coverage-html coverage/"
         ]
     }
 }

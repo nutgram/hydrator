@@ -15,14 +15,6 @@ use SergiX44\Hydrator\Hydrator;
 
 $hydrator = new Hydrator();
 
-// disable support for alias mechanism
-// available since version v2.5.0
-$hydrator->useAliases(false);
-
-// enable support for annotations
-// for php8 it is recommended to use attributes
-$hydrator->useAnnotations();
-
 // create and hydrate an object with an array
 $data = [/* the class props here */];
 $object = $hydrator->hydrate(SomeDto::class, $data);
@@ -32,11 +24,11 @@ $data = [/* the class props here */];
 $hydrator->hydrate($object, $data);
 
 // creates and hydrate an object with JSON
-$json = '';
+$json = '{...}';
 $object = $hydrator->hydrateWithJson(SomeDto::class, $json);
 
 // hydrate an object with JSON
-$json = '';
+$json = '{...}';
 $hydrator->hydrateWithJson($object, $json);
 
 // pass JSON decoding flags
@@ -51,7 +43,7 @@ $hydrator->hydrateWithJson($object, $json, $options);
 If a property has no a default value, then the property is required.
 
 ```php
-public readonly string $value;
+public string $value;
 ```
 
 ### Optional
@@ -59,7 +51,7 @@ public readonly string $value;
 If a property has a default value, then the property is optional.
 
 ```php
-public readonly string $value = 'foo';
+public string $value = 'foo';
 ```
 
 ### Null
@@ -67,13 +59,13 @@ public readonly string $value = 'foo';
 If a property is nullable, then the property can accept null.
 
 ```php
-public readonly ?string $value;
+public ?string $value;
 ```
 
 If the property should be optional, then it must has a default value.
 
 ```php
-public readonly ?string $value = null;
+public ?string $value = null;
 ```
 
 ### Boolean
@@ -81,7 +73,7 @@ public readonly ?string $value = null;
 Accepts the following values: true, false, 1, 0, "1", "0", "yes", "no", "on" and "no".
 
 ```php
-public readonly bool $value;
+public bool $value;
 ```
 
 ```php
@@ -94,7 +86,7 @@ public readonly bool $value;
 Accepts only integers (also as a string).
 
 ```php
-public readonly int $value;
+public int $value;
 ```
 
 ```php
@@ -107,7 +99,7 @@ public readonly int $value;
 Accepts only numbers (also as a string).
 
 ```php
-public readonly float $value;
+public float $value;
 ```
 
 ```php
@@ -120,7 +112,7 @@ public readonly float $value;
 Accepts only strings.
 
 ```php
-public readonly string $value;
+public string $value;
 ```
 
 ```php
@@ -132,11 +124,41 @@ public readonly string $value;
 Accepts only arrays.
 
 ```php
-public readonly array $value;
+public array $value;
 ```
 
 ```php
-['value' => []];
+['value' => [1, 2, 'foo']];
+```
+
+## Array<array-key, class>
+
+Accept a list of objects.
+
+```php
+final class SomeDto {
+    public readonly string $value;
+}
+```
+
+```php
+use SergiX44\Hydrator\Annotation\ArrayType;
+
+#[ArrayType(SomeDto::class)]
+public array $value;
+```
+
+```php
+[
+    'value' => [
+        [
+            'value' => 'foo',
+        ],
+        [
+            'value' => 'bar',
+        ],
+    ],
+],
 ```
 
 ## Object
@@ -144,7 +166,7 @@ public readonly array $value;
 Accepts only objects.
 
 ```php
-public readonly object $value;
+public object $value;
 ```
 
 ```php
@@ -156,7 +178,7 @@ public readonly object $value;
 Integers (also as a string) will be handled as a timestamp, otherwise accepts only valid date-time strings.
 
 ```php
-public readonly DateTimeImmutable $value;
+public DateTimeImmutable $value;
 ```
 
 ```php
@@ -173,7 +195,7 @@ public readonly DateTimeImmutable $value;
 Accepts only valid date-interval strings based on ISO 8601.
 
 ```php
-public readonly DateInterval $value;
+public DateInterval $value;
 ```
 
 ```php
@@ -192,7 +214,7 @@ enum SomeEnum: int {
 ```
 
 ```php
-public readonly SomeEnum $value;
+public SomeEnum $value;
 ```
 
 ```php
@@ -206,12 +228,12 @@ Accepts a valid structure for an association
 
 ```php
 final class SomeDto {
-    public readonly string $value;
+    public string $value;
 }
 ```
 
 ```php
-public readonly SomeDto $value;
+public SomeDto $value;
 ```
 
 ```php
@@ -220,39 +242,6 @@ public readonly SomeDto $value;
         'value' => 'foo',
     ],
 ]
-```
-
-## AssociationCollection<ObjectCollectionInterface<T>>
-
-Accepts a list of an association's valid structures.
-
-```php
-use SergiX44\Hydrator\ObjectCollection;
-
-final class SomeCollection extends ObjectCollection {
-    public const T = SomeDto::class;
-}
-
-final class SomeDto {
-    public readonly string $value;
-}
-```
-
-```php
-public readonly SomeCollection $value;
-```
-
-```php
-[
-    'value' => [
-        [
-            'value' => 'foo',
-        ],
-        [
-            'value' => 'bar',
-        ],
-    ],
-],
 ```
 
 ## Property alias
@@ -281,46 +270,23 @@ final class RecaptchaVerificationResult {
 }
 ```
 
-Please note, if you are using PHP 7 then you need to enable annotation support and use the following model:
-
-```php
-$hydrator->useAnnotations();
-```
-
-```php
-use SergiX44\Hydrator\Annotation\Alias;
-
-final class RecaptchaVerificationResult {
-    public bool $success;
-
-    /**
-     * @Alias("error-codes")
-     */
-    public array $errorCodes = [];
-}
-```
-
 ## Examples
 
 ```php
 final class Product {
-    public readonly string $name;
-    public readonly Category $category;
-    public readonly TagCollection $tags;
-    public readonly Status $status;
+    public string $name;
+    public Category $category;
+    #[ArrayType(Tag::class)]
+    public array $tags;
+    public Status $status;
 }
 
 final class Category {
-    public readonly string $name;
-}
-
-final class TagCollection extends \SergiX44\Hydrator\ObjectCollection {
-    // the collection will only accept this type
-    public const T = Tag::class;
+    public string $name;
 }
 
 final class Tag {
-    public readonly string $name;
+    public string $name;
 }
 
 enum Status: int {
