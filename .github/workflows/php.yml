@@ -1,0 +1,24 @@
+name: Test Suite
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        operating-system: [ ubuntu-latest ]
+        php-versions: [ "8.0", "8.1" ]
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Install dependencies
+        run: composer install --no-progress
+
+      - name: Run test suite
+        run: vendor/bin/phpunit --no-coverage
