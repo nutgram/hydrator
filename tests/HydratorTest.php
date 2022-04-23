@@ -8,6 +8,7 @@ use SergiX44\Hydrator\Exception;
 use SergiX44\Hydrator\Hydrator;
 use SergiX44\Hydrator\HydratorInterface;
 use SergiX44\Hydrator\Tests\Fixtures\Store\Tag;
+use SergiX44\Hydrator\Tests\Fixtures\Store\TagPrice;
 use TypeError;
 
 class HydratorTest extends TestCase
@@ -75,10 +76,40 @@ class HydratorTest extends TestCase
         }
 
         $this->expectException(Exception\UnsupportedPropertyTypeException::class);
-        $this->expectExceptionMessage('The ObjectWithIntOrFloat.value property ' .
-            'contains an union type that is not supported.');
+        $this->expectExceptionMessage('The ObjectWithIntOrFloat.value property cannot be hydrated automatically. Please define an union type resolver attribute or remove the union type.');
 
         (new Hydrator)->hydrate(Fixtures\ObjectWithIntOrFloat::class, []);
+    }
+
+    public function testAnnotatedUnionPropertyWithTagPriceType(): void
+    {
+        if (\PHP_MAJOR_VERSION < 8) {
+            $this->markTestSkipped('php >= 8 is required.');
+        }
+
+        $o = (new Hydrator)->hydrate(Fixtures\ObjectWithUnionAndAttribute::class, [
+            'tag' => [
+                'name' => 'foo',
+                'price' => 1.00
+            ]
+        ]);
+
+        $this->assertInstanceOf(TagPrice::class, $o->tag);
+    }
+
+    public function testAnnotatedUnionPropertyWithTagType(): void
+    {
+        if (\PHP_MAJOR_VERSION < 8) {
+            $this->markTestSkipped('php >= 8 is required.');
+        }
+
+        $o = (new Hydrator)->hydrate(Fixtures\ObjectWithUnionAndAttribute::class, [
+            'tag' => [
+                'name' => 'foo',
+            ]
+        ]);
+
+        $this->assertInstanceOf(Tag::class, $o->tag);
     }
 
     public function testHydrateAnnotatedPropertyWhenDisabledAnnotations(): void

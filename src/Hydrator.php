@@ -110,7 +110,7 @@ class Hydrator implements HydratorInterface
                     $propertyType = $resolver->resolve($propertyType, $data[$key]);
                 } else {
                     throw new Exception\UnsupportedPropertyTypeException(sprintf(
-                        'The %s.%s property contains an union type that is not supported.',
+                        'The %s.%s property cannot be hydrated automatically. Please define an union type resolver attribute or remove the union type.',
                         $class->getShortName(),
                         $property->getName()
                     ));
