@@ -96,7 +96,6 @@ class Hydrator implements HydratorInterface
 
             $key = $property->getName();
             if (!array_key_exists($key, $data)) {
-                /** @var Alias $alias */
                 $alias = $this->getPropertyAttribute($property, Alias::class);
                 if (isset($alias)) {
                     $key = $alias->value;
@@ -104,7 +103,6 @@ class Hydrator implements HydratorInterface
             }
 
             if ($propertyType instanceof ReflectionUnionType) {
-                /** @var UnionResolver $resolver */
                 $resolver = $this->getPropertyAttribute($property, UnionResolver::class);
                 if (isset($resolver)) {
                     $propertyType = $resolver->resolve($propertyType, $data[$key]);
@@ -507,7 +505,6 @@ class Hydrator implements HydratorInterface
             ));
         }
 
-        /** @var ArrayType $arrayType */
         $arrayType = $this->getPropertyAttribute($property, ArrayType::class);
         if ($arrayType !== null) {
             $value = array_map(function ($child) use ($arrayType) {
