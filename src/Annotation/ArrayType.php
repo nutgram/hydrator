@@ -29,13 +29,19 @@ final class ArrayType
     public string $class;
 
     /**
+     * @var int
+     */
+    public int $depth;
+
+    /**
      * Constructor of the class
      *
      * @param class-string $class
      */
-    public function __construct(string $class)
+    public function __construct(string $class, int $depth = 1)
     {
         $this->class = $class;
+        $this->depth = $depth;
     }
 
     /**

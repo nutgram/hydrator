@@ -348,6 +348,27 @@ class HydratorTest extends TestCase
         $this->assertSame('bar', $object->value[1]->name);
     }
 
+    public function testHydrateTypedNestedArrayableProperty(): void
+    {
+        $object = (new Hydrator)->hydrate(Fixtures\ObjectWithTypedArrayOfArray::class, ['value' => [
+            [['name' => 'foo'], ['name' => 'fef']],
+            [['name' => 'bar'], ['name' => 'fif']],
+        ]]);
+
+        $this->assertIsArray($object->value);
+        $this->assertIsArray($object->value[0]);
+        $this->assertIsArray($object->value[1]);
+        $this->assertInstanceOf(Tag::class, $object->value[0][0]);
+        $this->assertInstanceOf(Tag::class, $object->value[0][1]);
+        $this->assertInstanceOf(Tag::class, $object->value[1][0]);
+        $this->assertInstanceOf(Tag::class, $object->value[1][1]);
+
+        $this->assertSame('foo', $object->value[0][0]->name);
+        $this->assertSame('fef', $object->value[0][1]->name);
+        $this->assertSame('bar', $object->value[1][0]->name);
+        $this->assertSame('fif', $object->value[1][1]->name);
+    }
+
     public function testHydrateArrayablePropertyWithInvalidValue(): void
     {
         $this->expectException(Exception\InvalidValueException::class);

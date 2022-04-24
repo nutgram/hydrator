@@ -507,12 +507,30 @@ class Hydrator implements HydratorInterface
 
         $arrayType = $this->getPropertyAttribute($property, ArrayType::class);
         if ($arrayType !== null) {
-            $value = array_map(function ($child) use ($arrayType) {
-                return $this->hydrate($arrayType->getInstance(), $child);
-            }, $value);
+            $value = $this->hydrateObjectsInArray($value, $arrayType, $arrayType->depth);
         }
 
         $property->setValue($object, $value);
+    }
+
+    /**
+     * @param array $array
+     * @param ArrayType $arrayType
+     * @param int $depth
+     * @return array
+     * @throws \ReflectionException
+     */
+    private function hydrateObjectsInArray(array $array, ArrayType $arrayType, int $depth): array
+    {
+        if ($depth > 1) {
+            return array_map(function ($child) use ($arrayType, $depth) {
+                return $this->hydrateObjectsInArray($child, $arrayType, --$depth);
+            }, $array);
+        }
+
+        return array_map(function ($object) use ($arrayType) {
+            return $this->hydrate($arrayType->getInstance(), $object);
+        }, $array);
     }
 
     /**
