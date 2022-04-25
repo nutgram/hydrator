@@ -1,6 +1,5 @@
 <?php
 
-
 namespace SergiX44\Hydrator\Exception;
 
 use Throwable;
