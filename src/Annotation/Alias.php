@@ -1,6 +1,5 @@
 <?php
 
-
 namespace SergiX44\Hydrator\Annotation;
 
 use Attribute;
@@ -19,16 +18,15 @@ use Attribute;
 #[Attribute(Attribute::TARGET_PROPERTY)]
 final class Alias
 {
-
     /**
-     * The attribute value
+     * The attribute value.
      *
      * @var string
      */
     public string $value;
 
     /**
-     * Constructor of the class
+     * Constructor of the class.
      *
      * @param string $value
      */

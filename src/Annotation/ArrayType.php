@@ -1,6 +1,5 @@
 <?php
 
-
 namespace SergiX44\Hydrator\Annotation;
 
 use Attribute;
@@ -20,9 +19,8 @@ use ReflectionClass;
 #[Attribute(Attribute::TARGET_PROPERTY)]
 final class ArrayType
 {
-
     /**
-     * The attribute value
+     * The attribute value.
      *
      * @var class-string
      */
@@ -34,7 +32,7 @@ final class ArrayType
     public int $depth;
 
     /**
-     * Constructor of the class
+     * Constructor of the class.
      *
      * @param class-string $class
      */

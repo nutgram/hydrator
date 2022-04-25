@@ -1,6 +1,5 @@
 <?php
 
-
 namespace SergiX44\Hydrator\Annotation;
 
 use Attribute;
@@ -24,16 +23,15 @@ use SergiX44\Hydrator\UnionTypeResolver;
 #[Attribute(Attribute::TARGET_PROPERTY)]
 final class UnionResolver
 {
-
     /**
-     * The attribute value
+     * The attribute value.
      *
      * @var class-string
      */
     public string $class;
 
     /**
-     * Constructor of the class
+     * Constructor of the class.
      *
      * @param class-string $class
      */
@@ -52,8 +50,10 @@ final class UnionResolver
 
     /**
      * @param ReflectionUnionType $type
-     * @return ReflectionType
+     *
      * @throws \ReflectionException
+     *
+     * @return ReflectionType
      */
     public function resolve(ReflectionUnionType $type, array $data): ReflectionType
     {
