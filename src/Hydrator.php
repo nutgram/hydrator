@@ -1,13 +1,29 @@
 <?php
 
-
 namespace SergiX44\Hydrator;
 
+use function array_key_exists;
 use BackedEnum;
+use function class_exists;
+use function ctype_digit;
 use DateInterval;
 use DateTime;
 use DateTimeImmutable;
+use const FILTER_NULL_ON_FAILURE;
+use const FILTER_VALIDATE_BOOLEAN;
+use const FILTER_VALIDATE_FLOAT;
+use const FILTER_VALIDATE_INT;
+use function filter_var;
+use function get_object_vars;
+use function implode;
 use InvalidArgumentException;
+use function is_array;
+use function is_bool;
+use function is_float;
+use function is_int;
+use function is_object;
+use function is_string;
+use function is_subclass_of;
 use ReflectionClass;
 use ReflectionEnum;
 use ReflectionNamedType;
@@ -16,55 +32,37 @@ use ReflectionUnionType;
 use SergiX44\Hydrator\Annotation\Alias;
 use SergiX44\Hydrator\Annotation\ArrayType;
 use SergiX44\Hydrator\Annotation\UnionResolver;
-use function array_key_exists;
-use function class_exists;
-use function ctype_digit;
-use function filter_var;
-use function get_object_vars;
-use function implode;
-use function is_array;
-use function is_bool;
-use function is_float;
-use function is_int;
-use function is_object;
-use function is_string;
-use function is_subclass_of;
 use function sprintf;
 use function strtotime;
-use const FILTER_NULL_ON_FAILURE;
-use const FILTER_VALIDATE_BOOLEAN;
-use const FILTER_VALIDATE_FLOAT;
-use const FILTER_VALIDATE_INT;
-
 
 class Hydrator implements HydratorInterface
 {
-
     /**
-     * Hydrates the given object with the given data
+     * Hydrates the given object with the given data.
      *
      * @param class-string<T>|T $object
-     * @param array|object $data
+     * @param array|object      $data
+     *
+     * @throws Exception\HydrationException
+     *                                                    If the object cannot be hydrated.
+     * @throws InvalidArgumentException
+     *                                                    If the data isn't valid.
+     * @throws Exception\UntypedPropertyException
+     *                                                    If one of the object properties isn't typed.
+     * @throws Exception\UnsupportedPropertyTypeException
+     *                                                    If one of the object properties contains an unsupported type.
+     * @throws Exception\MissingRequiredValueException
+     *                                                    If the given data doesn't contain required value.
+     * @throws Exception\InvalidValueException
+     *                                                    If the given data contains an invalid value.
      *
      * @return T
      *
-     * @throws Exception\HydrationException
-     *         If the object cannot be hydrated.
      *
-     * @throws InvalidArgumentException
-     *         If the data isn't valid.
      *
-     * @throws Exception\UntypedPropertyException
-     *         If one of the object properties isn't typed.
      *
-     * @throws Exception\UnsupportedPropertyTypeException
-     *         If one of the object properties contains an unsupported type.
      *
-     * @throws Exception\MissingRequiredValueException
-     *         If the given data doesn't contain required value.
      *
-     * @throws Exception\InvalidValueException
-     *         If the given data contains an invalid value.
      *
      * @template T
      */
@@ -134,19 +132,20 @@ class Hydrator implements HydratorInterface
     }
 
     /**
-     * Hydrates the given object with the given JSON
+     * Hydrates the given object with the given JSON.
      *
      * @param class-string<T>|T $object
-     * @param string $json
-     * @param ?int $flags
+     * @param string            $json
+     * @param ?int              $flags
+     *
+     * @throws Exception\HydrationException
+     *                                      If the object cannot be hydrated.
+     * @throws InvalidArgumentException
+     *                                      If the JSON cannot be decoded.
      *
      * @return T
      *
-     * @throws Exception\HydrationException
-     *         If the object cannot be hydrated.
      *
-     * @throws InvalidArgumentException
-     *         If the JSON cannot be decoded.
      *
      * @template T
      */
@@ -158,7 +157,7 @@ class Hydrator implements HydratorInterface
 
         json_decode('');
         $data = json_decode($json, null, 512, $flags);
-        if (JSON_ERROR_NONE <> json_last_error()) {
+        if (JSON_ERROR_NONE != json_last_error()) {
             throw new InvalidArgumentException(sprintf(
                 'Unable to decode JSON: %s',
                 json_last_error_msg()
@@ -169,14 +168,15 @@ class Hydrator implements HydratorInterface
     }
 
     /**
-     * Initializes the given object
+     * Initializes the given object.
      *
      * @param class-string<T>|T $object
      *
+     * @throws InvalidArgumentException
+     *                                  If the object cannot be initialized.
+     *
      * @return T
      *
-     * @throws InvalidArgumentException
-     *         If the object cannot be initialized.
      *
      * @template T
      */
@@ -207,11 +207,12 @@ class Hydrator implements HydratorInterface
     }
 
     /**
-     * Gets an alias for the given property
+     * Gets an alias for the given property.
      *
      * @template T
+     *
      * @param ReflectionProperty $property
-     * @param class-string<T> $class
+     * @param class-string<T>    $class
      *
      * @return T|null
      */
@@ -226,30 +227,28 @@ class Hydrator implements HydratorInterface
     }
 
     /**
-     * Hydrates the given property with the given value
+     * Hydrates the given property with the given value.
      *
-     * @param object $object
-     * @param ReflectionClass $class
-     * @param ReflectionProperty $property
+     * @param object              $object
+     * @param ReflectionClass     $class
+     * @param ReflectionProperty  $property
      * @param ReflectionNamedType $type
-     * @param mixed $value
-     *
-     * @return void
+     * @param mixed               $value
      *
      * @throws Exception\InvalidValueException
-     *         If the given value isn't valid.
-     *
+     *                                                    If the given value isn't valid.
      * @throws Exception\UnsupportedPropertyTypeException
-     *         If the given property contains an unsupported type.
+     *                                                    If the given property contains an unsupported type.
+     *
+     * @return void
      */
     private function hydrateProperty(
-        object              $object,
-        ReflectionClass     $class,
-        ReflectionProperty  $property,
+        object $object,
+        ReflectionClass $class,
+        ReflectionProperty $property,
         ReflectionNamedType $type,
-        mixed               $value
-    ): void
-    {
+        mixed $value
+    ): void {
         $propertyType = $type->getName();
 
         match (true) {
@@ -286,25 +285,24 @@ class Hydrator implements HydratorInterface
     }
 
     /**
-     * Hydrates the given property with null
+     * Hydrates the given property with null.
      *
-     * @param object $object
-     * @param ReflectionClass $class
-     * @param ReflectionProperty $property
+     * @param object              $object
+     * @param ReflectionClass     $class
+     * @param ReflectionProperty  $property
      * @param ReflectionNamedType $type
      *
-     * @return void
-     *
      * @throws Exception\InvalidValueException
-     *         If the given value isn't valid.
+     *                                         If the given value isn't valid.
+     *
+     * @return void
      */
     private function propertyNull(
-        object              $object,
-        ReflectionClass     $class,
-        ReflectionProperty  $property,
+        object $object,
+        ReflectionClass $class,
+        ReflectionProperty $property,
         ReflectionNamedType $type
-    ): void
-    {
+    ): void {
         if (!$type->allowsNull()) {
             throw new Exception\InvalidValueException($property, sprintf(
                 'The %s.%s property cannot accept null.',
@@ -317,27 +315,26 @@ class Hydrator implements HydratorInterface
     }
 
     /**
-     * Hydrates the given property with the given boolean value
+     * Hydrates the given property with the given boolean value.
      *
-     * @param object $object
-     * @param ReflectionClass $class
-     * @param ReflectionProperty $property
+     * @param object              $object
+     * @param ReflectionClass     $class
+     * @param ReflectionProperty  $property
      * @param ReflectionNamedType $type
-     * @param mixed $value
-     *
-     * @return void
+     * @param mixed               $value
      *
      * @throws Exception\InvalidValueException
-     *         If the given value isn't valid.
+     *                                         If the given value isn't valid.
+     *
+     * @return void
      */
     private function propertyBool(
-        object              $object,
-        ReflectionClass     $class,
-        ReflectionProperty  $property,
+        object $object,
+        ReflectionClass $class,
+        ReflectionProperty $property,
         ReflectionNamedType $type,
-        mixed               $value
-    ): void
-    {
+        mixed $value
+    ): void {
         if (!is_bool($value)) {
             // if the value isn't boolean, then we will use filter_var, because it will give us the ability to specify
             // boolean values as strings. this behavior is great for html forms. details at:
@@ -357,27 +354,26 @@ class Hydrator implements HydratorInterface
     }
 
     /**
-     * Hydrates the given property with the given integer number
+     * Hydrates the given property with the given integer number.
      *
-     * @param object $object
-     * @param ReflectionClass $class
-     * @param ReflectionProperty $property
+     * @param object              $object
+     * @param ReflectionClass     $class
+     * @param ReflectionProperty  $property
      * @param ReflectionNamedType $type
-     * @param mixed $value
-     *
-     * @return void
+     * @param mixed               $value
      *
      * @throws Exception\InvalidValueException
-     *         If the given value isn't valid.
+     *                                         If the given value isn't valid.
+     *
+     * @return void
      */
     private function propertyInt(
-        object              $object,
-        ReflectionClass     $class,
-        ReflectionProperty  $property,
+        object $object,
+        ReflectionClass $class,
+        ReflectionProperty $property,
         ReflectionNamedType $type,
-        mixed               $value
-    ): void
-    {
+        mixed $value
+    ): void {
         if (!is_int($value)) {
             // it's senseless to convert the value type if it's not a number, so we will use filter_var to correct
             // converting the value type to int. also remember that string numbers must be between PHP_INT_MIN and
@@ -399,27 +395,26 @@ class Hydrator implements HydratorInterface
     }
 
     /**
-     * Hydrates the given property with the given number
+     * Hydrates the given property with the given number.
      *
-     * @param object $object
-     * @param ReflectionClass $class
-     * @param ReflectionProperty $property
+     * @param object              $object
+     * @param ReflectionClass     $class
+     * @param ReflectionProperty  $property
      * @param ReflectionNamedType $type
-     * @param mixed $value
-     *
-     * @return void
+     * @param mixed               $value
      *
      * @throws Exception\InvalidValueException
-     *         If the given value isn't valid.
+     *                                         If the given value isn't valid.
+     *
+     * @return void
      */
     private function propertyFloat(
-        object              $object,
-        ReflectionClass     $class,
-        ReflectionProperty  $property,
+        object $object,
+        ReflectionClass $class,
+        ReflectionProperty $property,
         ReflectionNamedType $type,
-        mixed               $value
-    ): void
-    {
+        mixed $value
+    ): void {
         if (!is_float($value)) {
             // it's senseless to convert the value type if it's not a number, so we will use filter_var to correct
             // converting the value type to float. this behavior is great for html forms. details at:
@@ -439,27 +434,26 @@ class Hydrator implements HydratorInterface
     }
 
     /**
-     * Hydrates the given property with the given string
+     * Hydrates the given property with the given string.
      *
-     * @param object $object
-     * @param ReflectionClass $class
-     * @param ReflectionProperty $property
+     * @param object              $object
+     * @param ReflectionClass     $class
+     * @param ReflectionProperty  $property
      * @param ReflectionNamedType $type
-     * @param mixed $value
-     *
-     * @return void
+     * @param mixed               $value
      *
      * @throws Exception\InvalidValueException
-     *         If the given value isn't valid.
+     *                                         If the given value isn't valid.
+     *
+     * @return void
      */
     private function propertyString(
-        object              $object,
-        ReflectionClass     $class,
-        ReflectionProperty  $property,
+        object $object,
+        ReflectionClass $class,
+        ReflectionProperty $property,
         ReflectionNamedType $type,
-        mixed               $value
-    ): void
-    {
+        mixed $value
+    ): void {
         if (!is_string($value)) {
             throw new Exception\InvalidValueException($property, sprintf(
                 'The %s.%s property expects a string.',
@@ -472,27 +466,26 @@ class Hydrator implements HydratorInterface
     }
 
     /**
-     * Hydrates the given property with the given array
+     * Hydrates the given property with the given array.
      *
-     * @param object $object
-     * @param ReflectionClass $class
-     * @param ReflectionProperty $property
+     * @param object              $object
+     * @param ReflectionClass     $class
+     * @param ReflectionProperty  $property
      * @param ReflectionNamedType $type
-     * @param mixed $value
-     *
-     * @return void
+     * @param mixed               $value
      *
      * @throws Exception\InvalidValueException
-     *         If the given value isn't valid.
+     *                                         If the given value isn't valid.
+     *
+     * @return void
      */
     private function propertyArray(
-        object              $object,
-        ReflectionClass     $class,
-        ReflectionProperty  $property,
+        object $object,
+        ReflectionClass $class,
+        ReflectionProperty $property,
         ReflectionNamedType $type,
-        mixed               $value
-    ): void
-    {
+        mixed $value
+    ): void {
         if (is_object($value)) {
             $value = get_object_vars($value);
         }
@@ -514,11 +507,13 @@ class Hydrator implements HydratorInterface
     }
 
     /**
-     * @param array $array
+     * @param array     $array
      * @param ArrayType $arrayType
-     * @param int $depth
-     * @return array
+     * @param int       $depth
+     *
      * @throws \ReflectionException
+     *
+     * @return array
      */
     private function hydrateObjectsInArray(array $array, ArrayType $arrayType, int $depth): array
     {
@@ -534,27 +529,26 @@ class Hydrator implements HydratorInterface
     }
 
     /**
-     * Hydrates the given property with the given object
+     * Hydrates the given property with the given object.
      *
-     * @param object $object
-     * @param ReflectionClass $class
-     * @param ReflectionProperty $property
+     * @param object              $object
+     * @param ReflectionClass     $class
+     * @param ReflectionProperty  $property
      * @param ReflectionNamedType $type
-     * @param mixed $value
-     *
-     * @return void
+     * @param mixed               $value
      *
      * @throws Exception\InvalidValueException
-     *         If the given value isn't valid.
+     *                                         If the given value isn't valid.
+     *
+     * @return void
      */
     private function propertyObject(
-        object              $object,
-        ReflectionClass     $class,
-        ReflectionProperty  $property,
+        object $object,
+        ReflectionClass $class,
+        ReflectionProperty $property,
         ReflectionNamedType $type,
-        mixed               $value
-    ): void
-    {
+        mixed $value
+    ): void {
         if (!is_object($value)) {
             throw new Exception\InvalidValueException($property, sprintf(
                 'The %s.%s property expects an object.',
@@ -567,34 +561,33 @@ class Hydrator implements HydratorInterface
     }
 
     /**
-     * Hydrates the given property with the given date-time
+     * Hydrates the given property with the given date-time.
      *
-     * @param object $object
-     * @param ReflectionClass $class
-     * @param ReflectionProperty $property
+     * @param object              $object
+     * @param ReflectionClass     $class
+     * @param ReflectionProperty  $property
      * @param ReflectionNamedType $type
-     * @param mixed $value
-     *
-     * @return void
+     * @param mixed               $value
      *
      * @throws Exception\InvalidValueException
-     *         If the given value isn't valid.
+     *                                         If the given value isn't valid.
+     *
+     * @return void
      */
     private function propertyDateTime(
-        object              $object,
-        ReflectionClass     $class,
-        ReflectionProperty  $property,
+        object $object,
+        ReflectionClass $class,
+        ReflectionProperty $property,
         ReflectionNamedType $type,
-        mixed               $value
-    ): void
-    {
+        mixed $value
+    ): void {
         /** @var class-string<DateTime|DateTimeImmutable> */
         $className = $type->getName();
 
         $property->setValue($object, match (true) {
-            is_int($value) => (new $className)->setTimestamp($value),
+            is_int($value) => (new $className())->setTimestamp($value),
 
-            is_string($value) && ctype_digit($value) => (new $className)->setTimestamp((int)$value),
+            is_string($value) && ctype_digit($value) => (new $className())->setTimestamp((int) $value),
 
             is_string($value) && false !== strtotime($value) => new $className($value),
 
@@ -607,27 +600,26 @@ class Hydrator implements HydratorInterface
     }
 
     /**
-     * Hydrates the given property with the given date-interval
+     * Hydrates the given property with the given date-interval.
      *
-     * @param object $object
-     * @param ReflectionClass $class
-     * @param ReflectionProperty $property
+     * @param object              $object
+     * @param ReflectionClass     $class
+     * @param ReflectionProperty  $property
      * @param ReflectionNamedType $type
-     * @param mixed $value
-     *
-     * @return void
+     * @param mixed               $value
      *
      * @throws Exception\InvalidValueException
-     *         If the given value isn't valid.
+     *                                         If the given value isn't valid.
+     *
+     * @return void
      */
     private function propertyDateInterval(
-        object              $object,
-        ReflectionClass     $class,
-        ReflectionProperty  $property,
+        object $object,
+        ReflectionClass $class,
+        ReflectionProperty $property,
         ReflectionNamedType $type,
-        mixed               $value
-    ): void
-    {
+        mixed $value
+    ): void {
         if (!is_string($value)) {
             throw new Exception\InvalidValueException($property, sprintf(
                 'The %s.%s property expects a string.',
@@ -653,27 +645,26 @@ class Hydrator implements HydratorInterface
     }
 
     /**
-     * Hydrates the given property with the given backed-enum
+     * Hydrates the given property with the given backed-enum.
      *
-     * @param object $object
-     * @param ReflectionClass $class
-     * @param ReflectionProperty $property
+     * @param object              $object
+     * @param ReflectionClass     $class
+     * @param ReflectionProperty  $property
      * @param ReflectionNamedType $type
-     * @param mixed $value
-     *
-     * @return void
+     * @param mixed               $value
      *
      * @throws Exception\InvalidValueException
-     *         If the given value isn't valid.
+     *                                         If the given value isn't valid.
+     *
+     * @return void
      */
     private function propertyBackedEnum(
-        object              $object,
-        ReflectionClass     $class,
-        ReflectionProperty  $property,
+        object $object,
+        ReflectionClass $class,
+        ReflectionProperty $property,
         ReflectionNamedType $type,
-        mixed               $value
-    ): void
-    {
+        mixed $value
+    ): void {
         /** @var class-string<BackedEnum> */
         $enumName = $type->getName();
         $enumReflection = new ReflectionEnum($enumName);
@@ -716,27 +707,26 @@ class Hydrator implements HydratorInterface
     }
 
     /**
-     * Hydrates the given property with the given one association
+     * Hydrates the given property with the given one association.
      *
-     * @param object $object
-     * @param ReflectionClass $class
-     * @param ReflectionProperty $property
+     * @param object              $object
+     * @param ReflectionClass     $class
+     * @param ReflectionProperty  $property
      * @param ReflectionNamedType $type
-     * @param mixed $value
-     *
-     * @return void
+     * @param mixed               $value
      *
      * @throws Exception\InvalidValueException
-     *         If the given value isn't valid.
+     *                                         If the given value isn't valid.
+     *
+     * @return void
      */
     private function propertyFromInstance(
-        object              $object,
-        ReflectionClass     $class,
-        ReflectionProperty  $property,
+        object $object,
+        ReflectionClass $class,
+        ReflectionProperty $property,
         ReflectionNamedType $type,
-        mixed               $value
-    ): void
-    {
+        mixed $value
+    ): void {
         if (!is_array($value) && !is_object($value)) {
             throw new Exception\InvalidValueException($property, sprintf(
                 'The %s.%s property expects an associative array or object.',

@@ -1,6 +1,5 @@
 <?php
 
-
 namespace SergiX44\Hydrator\Tests\Fixtures;
 
 use function array_map;
@@ -13,6 +12,6 @@ enum StringableEnum: string
 
     public static function values(): array
     {
-        return array_map(fn($case) => $case->value, static::cases());
+        return array_map(fn ($case) => $case->value, static::cases());
     }
 }

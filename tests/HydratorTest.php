@@ -23,26 +23,26 @@ class HydratorTest extends TestCase
     public function testInvalidObject(): void
     {
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('The ' . Hydrator::class . '::hydrate() method ' .
+        $this->expectExceptionMessage('The '.Hydrator::class.'::hydrate() method '.
             'expects an object or name of an existing class.');
 
-        (new Hydrator)->hydrate('Undefined', []);
+        (new Hydrator())->hydrate('Undefined', []);
     }
 
     public function testUninitializableObject(): void
     {
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('The ' . Fixtures\UninitializableObject::class . ' object ' .
+        $this->expectExceptionMessage('The '.Fixtures\UninitializableObject::class.' object '.
             'cannot be hydrated because its constructor has required parameters.');
 
-        (new Hydrator)->hydrate(Fixtures\UninitializableObject::class, []);
+        (new Hydrator())->hydrate(Fixtures\UninitializableObject::class, []);
     }
 
     public function testInvalidData(): void
     {
         $this->expectException(TypeError::class);
 
-        (new Hydrator)->hydrate(Fixtures\ObjectWithString::class, null);
+        (new Hydrator())->hydrate(Fixtures\ObjectWithString::class, null);
     }
 
     public function testInvalidJson(): void
@@ -50,12 +50,12 @@ class HydratorTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Unable to decode JSON: Syntax error');
 
-        (new Hydrator)->hydrateWithJson(Fixtures\ObjectWithString::class, '!');
+        (new Hydrator())->hydrateWithJson(Fixtures\ObjectWithString::class, '!');
     }
 
     public function testIgnoreStaticalProperty(): void
     {
-        $object = (new Hydrator)->hydrate(Fixtures\ObjectWithStaticalProperty::class, ['value' => 'foo']);
+        $object = (new Hydrator())->hydrate(Fixtures\ObjectWithStaticalProperty::class, ['value' => 'foo']);
 
         $this->assertNotSame('foo', $object::$value);
     }
@@ -63,10 +63,10 @@ class HydratorTest extends TestCase
     public function testUntypedProperty(): void
     {
         $this->expectException(Exception\UntypedPropertyException::class);
-        $this->expectExceptionMessage('The ObjectWithUntypedProperty.value property ' .
+        $this->expectExceptionMessage('The ObjectWithUntypedProperty.value property '.
             'is not typed.');
 
-        (new Hydrator)->hydrate(Fixtures\ObjectWithUntypedProperty::class, []);
+        (new Hydrator())->hydrate(Fixtures\ObjectWithUntypedProperty::class, []);
     }
 
     public function testUnionPropertyType(): void
@@ -78,7 +78,7 @@ class HydratorTest extends TestCase
         $this->expectException(Exception\UnsupportedPropertyTypeException::class);
         $this->expectExceptionMessage('The ObjectWithIntOrFloat.value property cannot be hydrated automatically. Please define an union type resolver attribute or remove the union type.');
 
-        (new Hydrator)->hydrate(Fixtures\ObjectWithIntOrFloat::class, []);
+        (new Hydrator())->hydrate(Fixtures\ObjectWithIntOrFloat::class, []);
     }
 
     public function testAnnotatedUnionPropertyWithTagPriceType(): void
@@ -87,11 +87,11 @@ class HydratorTest extends TestCase
             $this->markTestSkipped('php >= 8 is required.');
         }
 
-        $o = (new Hydrator)->hydrate(Fixtures\ObjectWithUnionAndAttribute::class, [
+        $o = (new Hydrator())->hydrate(Fixtures\ObjectWithUnionAndAttribute::class, [
             'tag' => [
-                'name' => 'foo',
-                'price' => 1.00
-            ]
+                'name'  => 'foo',
+                'price' => 1.00,
+            ],
         ]);
 
         $this->assertInstanceOf(TagPrice::class, $o->tag);
@@ -103,10 +103,10 @@ class HydratorTest extends TestCase
             $this->markTestSkipped('php >= 8 is required.');
         }
 
-        $o = (new Hydrator)->hydrate(Fixtures\ObjectWithUnionAndAttribute::class, [
+        $o = (new Hydrator())->hydrate(Fixtures\ObjectWithUnionAndAttribute::class, [
             'tag' => [
                 'name' => 'foo',
-            ]
+            ],
         ]);
 
         $this->assertInstanceOf(Tag::class, $o->tag);
@@ -115,10 +115,10 @@ class HydratorTest extends TestCase
     public function testHydrateAnnotatedPropertyWhenDisabledAnnotations(): void
     {
         $this->expectException(Exception\MissingRequiredValueException::class);
-        $this->expectExceptionMessage('The ObjectWithAnnotatedAlias.value property ' .
+        $this->expectExceptionMessage('The ObjectWithAnnotatedAlias.value property '.
             'is required.');
 
-        (new Hydrator)->hydrate(Fixtures\ObjectWithAnnotatedAlias::class, ['non-normalized-value' => 'foo']);
+        (new Hydrator())->hydrate(Fixtures\ObjectWithAnnotatedAlias::class, ['non-normalized-value' => 'foo']);
     }
 
     public function testHydrateAttributedProperty(): void
@@ -127,7 +127,7 @@ class HydratorTest extends TestCase
             $this->markTestSkipped('php >= 8 is required.');
         }
 
-        $object = (new Hydrator)->hydrate(Fixtures\ObjectWithAttributedAlias::class, ['non-normalized-value' => 'foo']);
+        $object = (new Hydrator())->hydrate(Fixtures\ObjectWithAttributedAlias::class, ['non-normalized-value' => 'foo']);
 
         $this->assertSame('foo', $object->value);
     }
@@ -138,7 +138,7 @@ class HydratorTest extends TestCase
             $this->markTestSkipped('php >= 8 is required.');
         }
 
-        $object = (new Hydrator)->hydrate(Fixtures\ObjectWithAttributedAlias::class, ['value' => 'foo']);
+        $object = (new Hydrator())->hydrate(Fixtures\ObjectWithAttributedAlias::class, ['value' => 'foo']);
 
         $this->assertSame('foo', $object->value);
     }
@@ -146,24 +146,24 @@ class HydratorTest extends TestCase
     public function testRequiredProperty(): void
     {
         $this->expectException(Exception\MissingRequiredValueException::class);
-        $this->expectExceptionMessage('The ObjectWithString.value property ' .
+        $this->expectExceptionMessage('The ObjectWithString.value property '.
             'is required.');
 
-        (new Hydrator)->hydrate(Fixtures\ObjectWithString::class, []);
+        (new Hydrator())->hydrate(Fixtures\ObjectWithString::class, []);
     }
 
     public function testUnsupportedPropertyType(): void
     {
         $this->expectException(Exception\UnsupportedPropertyTypeException::class);
-        $this->expectExceptionMessage('The ObjectWithUnsupportedType.value property ' .
+        $this->expectExceptionMessage('The ObjectWithUnsupportedType.value property '.
             'contains an unsupported type iterable.');
 
-        (new Hydrator)->hydrate(Fixtures\ObjectWithUnsupportedType::class, ['value' => false]);
+        (new Hydrator())->hydrate(Fixtures\ObjectWithUnsupportedType::class, ['value' => false]);
     }
 
     public function testOptionalProperty(): void
     {
-        $object = (new Hydrator)->hydrate(Fixtures\ObjectWithOptionalString::class, []);
+        $object = (new Hydrator())->hydrate(Fixtures\ObjectWithOptionalString::class, []);
 
         $this->assertSame('75c4c2a0-e352-4eda-b2ed-b7f713ffb9ff', $object->value);
     }
@@ -173,7 +173,7 @@ class HydratorTest extends TestCase
         $source = new Fixtures\ObjectWithString();
 
         // should return the source object...
-        $object = (new Hydrator)->hydrate($source, ['value' => 'foo']);
+        $object = (new Hydrator())->hydrate($source, ['value' => 'foo']);
 
         $this->assertSame($source, $object);
         $this->assertSame('foo', $source->value);
@@ -181,28 +181,28 @@ class HydratorTest extends TestCase
 
     public function testHydrateUsingDataObject(): void
     {
-        $object = (new Hydrator)->hydrate(Fixtures\ObjectWithString::class, (object)['value' => 'foo']);
+        $object = (new Hydrator())->hydrate(Fixtures\ObjectWithString::class, (object) ['value' => 'foo']);
 
         $this->assertSame('foo', $object->value);
     }
 
     public function testHydrateWithJson(): void
     {
-        $object = (new Hydrator)->hydrateWithJson(Fixtures\ObjectWithString::class, '{"value": "foo"}');
+        $object = (new Hydrator())->hydrateWithJson(Fixtures\ObjectWithString::class, '{"value": "foo"}');
 
         $this->assertSame('foo', $object->value);
     }
 
     public function testConvertEmptyStringToNullForNonStringType(): void
     {
-        $object = (new Hydrator)->hydrate(Fixtures\ObjectWithNullableInt::class, ['value' => '']);
+        $object = (new Hydrator())->hydrate(Fixtures\ObjectWithNullableInt::class, ['value' => '']);
 
         $this->assertNull($object->value);
     }
 
     public function testHydrateNullablePropertyWithNull(): void
     {
-        $object = (new Hydrator)->hydrate(Fixtures\ObjectWithNullableString::class, ['value' => null]);
+        $object = (new Hydrator())->hydrate(Fixtures\ObjectWithNullableString::class, ['value' => null]);
 
         $this->assertNull($object->value);
     }
@@ -210,10 +210,10 @@ class HydratorTest extends TestCase
     public function testHydrateUnnullablePropertyWithNull(): void
     {
         $this->expectException(Exception\InvalidValueException::class);
-        $this->expectExceptionMessage('The ObjectWithString.value property ' .
+        $this->expectExceptionMessage('The ObjectWithString.value property '.
             'cannot accept null.');
 
-        (new Hydrator)->hydrate(Fixtures\ObjectWithString::class, ['value' => null]);
+        (new Hydrator())->hydrate(Fixtures\ObjectWithString::class, ['value' => null]);
     }
 
     /**
@@ -221,7 +221,7 @@ class HydratorTest extends TestCase
      */
     public function testHydrateBooleanProperty($value, $expected): void
     {
-        $object = (new Hydrator)->hydrate(Fixtures\ObjectWithBool::class, ['value' => $value]);
+        $object = (new Hydrator())->hydrate(Fixtures\ObjectWithBool::class, ['value' => $value]);
 
         $this->assertSame($expected, $object->value);
     }
@@ -247,7 +247,7 @@ class HydratorTest extends TestCase
         $this->expectException(Exception\InvalidValueException::class);
         $this->expectExceptionMessage('The ObjectWithBool.value property expects a boolean.');
 
-        (new Hydrator)->hydrate(Fixtures\ObjectWithBool::class, ['value' => 'foo']);
+        (new Hydrator())->hydrate(Fixtures\ObjectWithBool::class, ['value' => 'foo']);
     }
 
     /**
@@ -255,7 +255,7 @@ class HydratorTest extends TestCase
      */
     public function testHydrateIntegerProperty($value, $expected): void
     {
-        $object = (new Hydrator)->hydrate(Fixtures\ObjectWithInt::class, ['value' => $value]);
+        $object = (new Hydrator())->hydrate(Fixtures\ObjectWithInt::class, ['value' => $value]);
 
         $this->assertSame($expected, $object->value);
     }
@@ -273,7 +273,7 @@ class HydratorTest extends TestCase
         $this->expectException(Exception\InvalidValueException::class);
         $this->expectExceptionMessage('The ObjectWithInt.value property expects an integer.');
 
-        (new Hydrator)->hydrate(Fixtures\ObjectWithInt::class, ['value' => 'foo']);
+        (new Hydrator())->hydrate(Fixtures\ObjectWithInt::class, ['value' => 'foo']);
     }
 
     /**
@@ -281,7 +281,7 @@ class HydratorTest extends TestCase
      */
     public function testHydrateNumberProperty($value, $expected): void
     {
-        $object = (new Hydrator)->hydrate(Fixtures\ObjectWithFloat::class, ['value' => $value]);
+        $object = (new Hydrator())->hydrate(Fixtures\ObjectWithFloat::class, ['value' => $value]);
 
         $this->assertSame($expected, $object->value);
     }
@@ -301,19 +301,19 @@ class HydratorTest extends TestCase
         $this->expectException(Exception\InvalidValueException::class);
         $this->expectExceptionMessage('The ObjectWithFloat.value property expects a number.');
 
-        (new Hydrator)->hydrate(Fixtures\ObjectWithFloat::class, ['value' => 'foo']);
+        (new Hydrator())->hydrate(Fixtures\ObjectWithFloat::class, ['value' => 'foo']);
     }
 
     public function testHydrateStringableProperty(): void
     {
-        $object = (new Hydrator)->hydrate(Fixtures\ObjectWithString::class, ['value' => 'foo']);
+        $object = (new Hydrator())->hydrate(Fixtures\ObjectWithString::class, ['value' => 'foo']);
 
         $this->assertSame('foo', $object->value);
     }
 
     public function testHydrateStringablePropertyWithEmptyString(): void
     {
-        $object = (new Hydrator)->hydrate(Fixtures\ObjectWithString::class, ['value' => '']);
+        $object = (new Hydrator())->hydrate(Fixtures\ObjectWithString::class, ['value' => '']);
 
         $this->assertSame('', $object->value);
     }
@@ -323,19 +323,19 @@ class HydratorTest extends TestCase
         $this->expectException(Exception\InvalidValueException::class);
         $this->expectExceptionMessage('The ObjectWithString.value property expects a string.');
 
-        (new Hydrator)->hydrate(Fixtures\ObjectWithString::class, ['value' => 42]);
+        (new Hydrator())->hydrate(Fixtures\ObjectWithString::class, ['value' => 42]);
     }
 
     public function testHydrateArrayableProperty(): void
     {
-        $object = (new Hydrator)->hydrate(Fixtures\ObjectWithArray::class, ['value' => ['foo']]);
+        $object = (new Hydrator())->hydrate(Fixtures\ObjectWithArray::class, ['value' => ['foo']]);
 
         $this->assertSame(['foo'], $object->value);
     }
 
     public function testHydrateTypedArrayableProperty(): void
     {
-        $object = (new Hydrator)->hydrate(Fixtures\ObjectWithTypedArray::class, ['value' => [
+        $object = (new Hydrator())->hydrate(Fixtures\ObjectWithTypedArray::class, ['value' => [
             ['name' => 'foo'],
             ['name' => 'bar'],
         ]]);
@@ -350,7 +350,7 @@ class HydratorTest extends TestCase
 
     public function testHydrateTypedNestedArrayableProperty(): void
     {
-        $object = (new Hydrator)->hydrate(Fixtures\ObjectWithTypedArrayOfArray::class, ['value' => [
+        $object = (new Hydrator())->hydrate(Fixtures\ObjectWithTypedArrayOfArray::class, ['value' => [
             [['name' => 'foo'], ['name' => 'fef']],
             [['name' => 'bar'], ['name' => 'fif']],
         ]]);
@@ -374,14 +374,14 @@ class HydratorTest extends TestCase
         $this->expectException(Exception\InvalidValueException::class);
         $this->expectExceptionMessage('The ObjectWithArray.value property expects an array.');
 
-        (new Hydrator)->hydrate(Fixtures\ObjectWithArray::class, ['value' => 'foo']);
+        (new Hydrator())->hydrate(Fixtures\ObjectWithArray::class, ['value' => 'foo']);
     }
 
     public function testHydrateObjectableProperty(): void
     {
-        $value = (object)['value' => 'foo'];
+        $value = (object) ['value' => 'foo'];
 
-        $object = (new Hydrator)->hydrate(Fixtures\ObjectWithObject::class, ['value' => $value]);
+        $object = (new Hydrator())->hydrate(Fixtures\ObjectWithObject::class, ['value' => $value]);
 
         $this->assertSame($value, $object->value);
     }
@@ -391,7 +391,7 @@ class HydratorTest extends TestCase
         $this->expectException(Exception\InvalidValueException::class);
         $this->expectExceptionMessage('The ObjectWithObject.value property expects an object.');
 
-        (new Hydrator)->hydrate(Fixtures\ObjectWithObject::class, ['value' => 'foo']);
+        (new Hydrator())->hydrate(Fixtures\ObjectWithObject::class, ['value' => 'foo']);
     }
 
     /**
@@ -399,7 +399,7 @@ class HydratorTest extends TestCase
      */
     public function testHydrateDateTimeProperty($value, $expected): void
     {
-        $object = (new Hydrator)->hydrate(Fixtures\ObjectWithDateTime::class, ['value' => $value]);
+        $object = (new Hydrator())->hydrate(Fixtures\ObjectWithDateTime::class, ['value' => $value]);
 
         $this->assertSame($expected, $object->value->format('Y-m-d'));
     }
@@ -409,7 +409,7 @@ class HydratorTest extends TestCase
      */
     public function testHydrateDateTimeImmutableProperty($value, $expected): void
     {
-        $object = (new Hydrator)->hydrate(Fixtures\ObjectWithDateTimeImmutable::class, ['value' => $value]);
+        $object = (new Hydrator())->hydrate(Fixtures\ObjectWithDateTimeImmutable::class, ['value' => $value]);
 
         $this->assertSame($expected, $object->value->format('Y-m-d'));
     }
@@ -426,24 +426,24 @@ class HydratorTest extends TestCase
     public function testHydrateDateTimePropertyWithInvalidValue(): void
     {
         $this->expectException(Exception\InvalidValueException::class);
-        $this->expectExceptionMessage('The ObjectWithDateTime.value property ' .
+        $this->expectExceptionMessage('The ObjectWithDateTime.value property '.
             'expects a valid date-time string or timestamp.');
 
-        (new Hydrator)->hydrate(Fixtures\ObjectWithDateTime::class, ['value' => 'foo']);
+        (new Hydrator())->hydrate(Fixtures\ObjectWithDateTime::class, ['value' => 'foo']);
     }
 
     public function testHydrateDateTimeImmutablePropertyWithInvalidValue(): void
     {
         $this->expectException(Exception\InvalidValueException::class);
-        $this->expectExceptionMessage('The ObjectWithDateTimeImmutable.value property ' .
+        $this->expectExceptionMessage('The ObjectWithDateTimeImmutable.value property '.
             'expects a valid date-time string or timestamp.');
 
-        (new Hydrator)->hydrate(Fixtures\ObjectWithDateTimeImmutable::class, ['value' => 'foo']);
+        (new Hydrator())->hydrate(Fixtures\ObjectWithDateTimeImmutable::class, ['value' => 'foo']);
     }
 
     public function testHydrateDateIntervalProperty(): void
     {
-        $object = (new Hydrator)->hydrate(Fixtures\ObjectWithDateInterval::class, ['value' => 'P33Y']);
+        $object = (new Hydrator())->hydrate(Fixtures\ObjectWithDateInterval::class, ['value' => 'P33Y']);
 
         $this->assertSame(33, $object->value->y);
     }
@@ -451,19 +451,19 @@ class HydratorTest extends TestCase
     public function testHydrateDateIntervalPropertyWithInvalidValue(): void
     {
         $this->expectException(Exception\InvalidValueException::class);
-        $this->expectExceptionMessage('The ObjectWithDateInterval.value property ' .
+        $this->expectExceptionMessage('The ObjectWithDateInterval.value property '.
             'expects a string.');
 
-        (new Hydrator)->hydrate(Fixtures\ObjectWithDateInterval::class, ['value' => 42]);
+        (new Hydrator())->hydrate(Fixtures\ObjectWithDateInterval::class, ['value' => 42]);
     }
 
     public function testHydrateDateIntervalPropertyWithInvalidFormat(): void
     {
         $this->expectException(Exception\InvalidValueException::class);
-        $this->expectExceptionMessage('The ObjectWithDateInterval.value property ' .
+        $this->expectExceptionMessage('The ObjectWithDateInterval.value property '.
             'expects a valid date-interval string based on ISO 8601.');
 
-        (new Hydrator)->hydrate(Fixtures\ObjectWithDateInterval::class, ['value' => 'foo']);
+        (new Hydrator())->hydrate(Fixtures\ObjectWithDateInterval::class, ['value' => 'foo']);
     }
 
     /**
@@ -475,7 +475,7 @@ class HydratorTest extends TestCase
             $this->markTestSkipped('php >= 8.1 is required.');
         }
 
-        $object = (new Hydrator)->hydrate(Fixtures\ObjectWithStringableEnum::class, ['value' => $value]);
+        $object = (new Hydrator())->hydrate(Fixtures\ObjectWithStringableEnum::class, ['value' => $value]);
 
         $this->assertSame($expected, $object->value);
     }
@@ -500,10 +500,10 @@ class HydratorTest extends TestCase
         }
 
         $this->expectException(Exception\InvalidValueException::class);
-        $this->expectExceptionMessage('The ObjectWithStringableEnum.value property ' .
+        $this->expectExceptionMessage('The ObjectWithStringableEnum.value property '.
             'expects the following type: string.');
 
-        (new Hydrator)->hydrate(Fixtures\ObjectWithStringableEnum::class, ['value' => 42]);
+        (new Hydrator())->hydrate(Fixtures\ObjectWithStringableEnum::class, ['value' => 42]);
     }
 
     public function testHydrateStringableEnumPropertyWithInvalidUnknownCase(): void
@@ -513,11 +513,11 @@ class HydratorTest extends TestCase
         }
 
         $this->expectException(Exception\InvalidValueException::class);
-        $this->expectExceptionMessage('The ObjectWithStringableEnum.value property ' .
-            'expects one of the following values: ' .
-            \implode(', ', Fixtures\StringableEnum::values()) . '.');
+        $this->expectExceptionMessage('The ObjectWithStringableEnum.value property '.
+            'expects one of the following values: '.
+            \implode(', ', Fixtures\StringableEnum::values()).'.');
 
-        (new Hydrator)->hydrate(Fixtures\ObjectWithStringableEnum::class, ['value' => 'foo']);
+        (new Hydrator())->hydrate(Fixtures\ObjectWithStringableEnum::class, ['value' => 'foo']);
     }
 
     /**
@@ -529,7 +529,7 @@ class HydratorTest extends TestCase
             $this->markTestSkipped('php >= 8.1 is required.');
         }
 
-        $object = (new Hydrator)->hydrate(Fixtures\ObjectWithNumerableEnum::class, ['value' => $value]);
+        $object = (new Hydrator())->hydrate(Fixtures\ObjectWithNumerableEnum::class, ['value' => $value]);
 
         $this->assertSame($expected, $object->value);
     }
@@ -559,10 +559,10 @@ class HydratorTest extends TestCase
         }
 
         $this->expectException(Exception\InvalidValueException::class);
-        $this->expectExceptionMessage('The ObjectWithNumerableEnum.value property ' .
+        $this->expectExceptionMessage('The ObjectWithNumerableEnum.value property '.
             'expects the following type: int.');
 
-        (new Hydrator)->hydrate(Fixtures\ObjectWithNumerableEnum::class, ['value' => 'foo']);
+        (new Hydrator())->hydrate(Fixtures\ObjectWithNumerableEnum::class, ['value' => 'foo']);
     }
 
     public function testHydrateNumerableEnumPropertyWithInvalidUnknownCase(): void
@@ -572,23 +572,23 @@ class HydratorTest extends TestCase
         }
 
         $this->expectException(Exception\InvalidValueException::class);
-        $this->expectExceptionMessage('The ObjectWithNumerableEnum.value property ' .
-            'expects one of the following values: ' .
-            \implode(', ', Fixtures\NumerableEnum::values()) . '.');
+        $this->expectExceptionMessage('The ObjectWithNumerableEnum.value property '.
+            'expects one of the following values: '.
+            \implode(', ', Fixtures\NumerableEnum::values()).'.');
 
-        (new Hydrator)->hydrate(Fixtures\ObjectWithNumerableEnum::class, ['value' => 42]);
+        (new Hydrator())->hydrate(Fixtures\ObjectWithNumerableEnum::class, ['value' => 42]);
     }
 
     public function testHydrateAssociatedProperty(): void
     {
-        $o = (new Hydrator)->hydrate(Fixtures\ObjectWithAssociation::class, ['value' => ['value' => 'foo']]);
+        $o = (new Hydrator())->hydrate(Fixtures\ObjectWithAssociation::class, ['value' => ['value' => 'foo']]);
 
         $this->assertSame('foo', $o->value->value);
     }
 
     public function testHydrateAssociatedPropertyUsingDataObject(): void
     {
-        $o = (new Hydrator)->hydrate(Fixtures\ObjectWithAssociation::class, ['value' => (object)['value' => 'foo']]);
+        $o = (new Hydrator())->hydrate(Fixtures\ObjectWithAssociation::class, ['value' => (object) ['value' => 'foo']]);
 
         $this->assertSame('foo', $o->value->value);
     }
@@ -596,15 +596,15 @@ class HydratorTest extends TestCase
     public function testHydrateAssociatedPropertyWithInvalidData(): void
     {
         $this->expectException(Exception\InvalidValueException::class);
-        $this->expectExceptionMessage('The ObjectWithAssociation.value property ' .
+        $this->expectExceptionMessage('The ObjectWithAssociation.value property '.
             'expects an associative array or object.');
 
-        (new Hydrator)->hydrate(Fixtures\ObjectWithAssociation::class, ['value' => 'foo']);
+        (new Hydrator())->hydrate(Fixtures\ObjectWithAssociation::class, ['value' => 'foo']);
     }
 
     public function testHydrateAssociationCollectionProperty(): void
     {
-        $o = (new Hydrator)->hydrate(Fixtures\ObjectWithAssociations::class, ['value' => [
+        $o = (new Hydrator())->hydrate(Fixtures\ObjectWithAssociations::class, ['value' => [
             'foo' => ['value' => 'foo'],
             'bar' => ['value' => 'bar'],
         ]]);
@@ -618,9 +618,9 @@ class HydratorTest extends TestCase
 
     public function testHydrateAssociationCollectionPropertyUsingDataObject(): void
     {
-        $o = (new Hydrator)->hydrate(Fixtures\ObjectWithAssociations::class, ['value' => (object)[
-            'foo' => (object)['value' => 'foo'],
-            'bar' => (object)['value' => 'bar'],
+        $o = (new Hydrator())->hydrate(Fixtures\ObjectWithAssociations::class, ['value' => (object) [
+            'foo' => (object) ['value' => 'foo'],
+            'bar' => (object) ['value' => 'bar'],
         ]]);
 
         $this->assertNotNull($o->value['foo']);
@@ -633,23 +633,23 @@ class HydratorTest extends TestCase
     public function testHydrateAssociationCollectionPropertyWithInvalidData(): void
     {
         $this->expectException(Exception\InvalidValueException::class);
-        $this->expectExceptionMessage('The ObjectWithAssociations.value property ' .
+        $this->expectExceptionMessage('The ObjectWithAssociations.value property '.
             'expects an array.');
 
-        (new Hydrator)->hydrate(Fixtures\ObjectWithAssociations::class, ['value' => 'foo']);
+        (new Hydrator())->hydrate(Fixtures\ObjectWithAssociations::class, ['value' => 'foo']);
     }
 
     public function testHydrateAssociationCollectionPropertyWithInvalidChild(): void
     {
         $this->expectException(TypeError::class);
 
-        (new Hydrator)->hydrate(Fixtures\ObjectWithAssociations::class, ['value' => ['foo']]);
+        (new Hydrator())->hydrate(Fixtures\ObjectWithAssociations::class, ['value' => ['foo']]);
     }
 
     public function testInvalidValueExceptionProperty(): void
     {
         try {
-            (new Hydrator)->hydrate(Fixtures\ObjectWithString::class, ['value' => 42]);
+            (new Hydrator())->hydrate(Fixtures\ObjectWithString::class, ['value' => 42]);
         } catch (Exception\InvalidValueException $e) {
             $this->assertSame('value', $e->getProperty()->getName());
             $this->assertSame('ObjectWithString.value', $e->getPropertyPath());
@@ -662,7 +662,7 @@ class HydratorTest extends TestCase
             $this->markTestSkipped('php >= 8.1 is required.');
         }
 
-        $json = <<<JSON
+        $json = <<<'JSON'
         {
             "name": "ac7ce13e-9b2e-4b09-ae7a-973769ea43df",
             "category": {
@@ -680,7 +680,7 @@ class HydratorTest extends TestCase
         }
         JSON;
 
-        $product = (new Hydrator)->hydrateWithJson(Fixtures\Store\Product::class, $json);
+        $product = (new Hydrator())->hydrateWithJson(Fixtures\Store\Product::class, $json);
 
         $this->assertSame('ac7ce13e-9b2e-4b09-ae7a-973769ea43df', $product->name);
         $this->assertSame('a0127d1b-28b6-40a9-9a62-cfb2e2b44abd', $product->category->name);
@@ -695,7 +695,7 @@ class HydratorTest extends TestCase
             $this->markTestSkipped('php >= 8.1 is required.');
         }
 
-        $json = <<<JSON
+        $json = <<<'JSON'
         {
             "name": "0f61ac0e-f732-4088-8082-cc396e7dcb80",
             "category": {
@@ -713,7 +713,7 @@ class HydratorTest extends TestCase
         }
         JSON;
 
-        $product = (new Hydrator)->hydrateWithJson(Fixtures\Store\Product::class, $json, 0);
+        $product = (new Hydrator())->hydrateWithJson(Fixtures\Store\Product::class, $json, 0);
 
         $this->assertSame('0f61ac0e-f732-4088-8082-cc396e7dcb80', $product->name);
         $this->assertSame('d342d030-3c0c-431e-be54-2e933b722b7c', $product->category->name);
