@@ -197,10 +197,10 @@ class Hydrator implements HydratorInterface
         $class = new ReflectionClass($object);
 
         if ($class->isAbstract()) {
-            if (!$class->implementsInterface(AbstractClassResolver::class)) {
+            if (!$class->implementsInterface(ConcreteResolver::class)) {
                 throw new InvalidObjectException(sprintf(
                     'The given abstract object must implement %s.',
-                    AbstractClassResolver::class
+                    ConcreteResolver::class
                 ));
             }
 

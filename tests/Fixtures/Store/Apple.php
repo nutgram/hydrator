@@ -3,9 +3,9 @@
 namespace SergiX44\Hydrator\Tests\Fixtures\Store;
 
 use Exception;
-use SergiX44\Hydrator\AbstractClassResolver;
+use SergiX44\Hydrator\ConcreteResolver;
 
-abstract class Apple implements AbstractClassResolver
+abstract class Apple implements ConcreteResolver
 {
     public string $type;
 

@@ -2,7 +2,7 @@
 
 namespace SergiX44\Hydrator;
 
-interface AbstractClassResolver
+interface ConcreteResolver
 {
     /**
      * @param array $data
