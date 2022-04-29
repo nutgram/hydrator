@@ -12,7 +12,7 @@ abstract class Apple implements AbstractClassResolver
     public static function resolveAbstractClass(array $data): string
     {
         return match ($data['type']) {
-            'jack' => AppleJack::class,
+            'jack'  => AppleJack::class,
             'sauce' => AppleSauce::class,
             default => throw new Exception('Invalid apple type'),
         };

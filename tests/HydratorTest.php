@@ -96,7 +96,7 @@ class HydratorTest extends TestCase
 
         $o = (new Hydrator())->hydrate(Fixtures\ObjectWithUnionAndAttribute::class, [
             'tag' => [
-                'name' => 'foo',
+                'name'  => 'foo',
                 'price' => 1.00,
             ],
         ]);
@@ -134,8 +134,10 @@ class HydratorTest extends TestCase
             $this->markTestSkipped('php >= 8 is required.');
         }
 
-        $object = (new Hydrator())->hydrate(Fixtures\ObjectWithAttributedAlias::class,
-            ['non-normalized-value' => 'foo']);
+        $object = (new Hydrator())->hydrate(
+            Fixtures\ObjectWithAttributedAlias::class,
+            ['non-normalized-value' => 'foo']
+        );
 
         $this->assertSame('foo', $object->value);
     }
@@ -347,7 +349,7 @@ class HydratorTest extends TestCase
             'value' => [
                 ['name' => 'foo'],
                 ['name' => 'bar'],
-            ]
+            ],
         ]);
 
         $this->assertIsArray($object->value);
@@ -364,7 +366,7 @@ class HydratorTest extends TestCase
             'value' => [
                 [['name' => 'foo'], ['name' => 'fef']],
                 [['name' => 'bar'], ['name' => 'fif']],
-            ]
+            ],
         ]);
 
         $this->assertIsArray($object->value);
@@ -620,7 +622,7 @@ class HydratorTest extends TestCase
             'value' => [
                 'foo' => ['value' => 'foo'],
                 'bar' => ['value' => 'bar'],
-            ]
+            ],
         ]);
 
         $this->assertNotNull($o->value['foo']);
@@ -636,7 +638,7 @@ class HydratorTest extends TestCase
             'value' => (object) [
                 'foo' => (object) ['value' => 'foo'],
                 'bar' => (object) ['value' => 'bar'],
-            ]
+            ],
         ]);
 
         $this->assertNotNull($o->value['foo']);
@@ -741,9 +743,9 @@ class HydratorTest extends TestCase
     public function testHydrateAbstractObject(): void
     {
         $o = (new Hydrator())->hydrate(Apple::class, [
-            'type' => 'sauce',
+            'type'      => 'sauce',
             'sweetness' => 100,
-            'category' => null,
+            'category'  => null,
         ]);
 
         $this->assertInstanceOf(AppleSauce::class, $o);
@@ -762,10 +764,10 @@ class HydratorTest extends TestCase
     {
         $o = (new Hydrator())->hydrate(new ObjectWithAbstract(), [
             'value' => [
-                'type' => 'jack',
+                'type'      => 'jack',
                 'sweetness' => null,
-                'category' => 'brandy',
-            ]
+                'category'  => 'brandy',
+            ],
         ]);
 
         $this->assertInstanceOf(ObjectWithAbstract::class, $o);
@@ -781,7 +783,7 @@ class HydratorTest extends TestCase
         (new Hydrator())->hydrate(new ObjectWithInvalidAbstract(), [
             'value' => [
                 'name' => 'apple',
-            ]
+            ],
         ]);
     }
 }
