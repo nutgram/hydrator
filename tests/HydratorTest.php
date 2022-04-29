@@ -5,8 +5,15 @@ namespace SergiX44\Hydrator\Tests;
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 use SergiX44\Hydrator\Exception;
+use SergiX44\Hydrator\Exception\InvalidObjectException;
 use SergiX44\Hydrator\Hydrator;
 use SergiX44\Hydrator\HydratorInterface;
+use SergiX44\Hydrator\Tests\Fixtures\ObjectWithAbstract;
+use SergiX44\Hydrator\Tests\Fixtures\ObjectWithInvalidAbstract;
+use SergiX44\Hydrator\Tests\Fixtures\Store\Apple;
+use SergiX44\Hydrator\Tests\Fixtures\Store\AppleJack;
+use SergiX44\Hydrator\Tests\Fixtures\Store\AppleSauce;
+use SergiX44\Hydrator\Tests\Fixtures\Store\Fruit;
 use SergiX44\Hydrator\Tests\Fixtures\Store\Tag;
 use SergiX44\Hydrator\Tests\Fixtures\Store\TagPrice;
 use TypeError;
@@ -127,7 +134,10 @@ class HydratorTest extends TestCase
             $this->markTestSkipped('php >= 8 is required.');
         }
 
-        $object = (new Hydrator())->hydrate(Fixtures\ObjectWithAttributedAlias::class, ['non-normalized-value' => 'foo']);
+        $object = (new Hydrator())->hydrate(
+            Fixtures\ObjectWithAttributedAlias::class,
+            ['non-normalized-value' => 'foo']
+        );
 
         $this->assertSame('foo', $object->value);
     }
@@ -335,10 +345,12 @@ class HydratorTest extends TestCase
 
     public function testHydrateTypedArrayableProperty(): void
     {
-        $object = (new Hydrator())->hydrate(Fixtures\ObjectWithTypedArray::class, ['value' => [
-            ['name' => 'foo'],
-            ['name' => 'bar'],
-        ]]);
+        $object = (new Hydrator())->hydrate(Fixtures\ObjectWithTypedArray::class, [
+            'value' => [
+                ['name' => 'foo'],
+                ['name' => 'bar'],
+            ],
+        ]);
 
         $this->assertIsArray($object->value);
         $this->assertInstanceOf(Tag::class, $object->value[0]);
@@ -350,10 +362,12 @@ class HydratorTest extends TestCase
 
     public function testHydrateTypedNestedArrayableProperty(): void
     {
-        $object = (new Hydrator())->hydrate(Fixtures\ObjectWithTypedArrayOfArray::class, ['value' => [
-            [['name' => 'foo'], ['name' => 'fef']],
-            [['name' => 'bar'], ['name' => 'fif']],
-        ]]);
+        $object = (new Hydrator())->hydrate(Fixtures\ObjectWithTypedArrayOfArray::class, [
+            'value' => [
+                [['name' => 'foo'], ['name' => 'fef']],
+                [['name' => 'bar'], ['name' => 'fif']],
+            ],
+        ]);
 
         $this->assertIsArray($object->value);
         $this->assertIsArray($object->value[0]);
@@ -604,10 +618,12 @@ class HydratorTest extends TestCase
 
     public function testHydrateAssociationCollectionProperty(): void
     {
-        $o = (new Hydrator())->hydrate(Fixtures\ObjectWithAssociations::class, ['value' => [
-            'foo' => ['value' => 'foo'],
-            'bar' => ['value' => 'bar'],
-        ]]);
+        $o = (new Hydrator())->hydrate(Fixtures\ObjectWithAssociations::class, [
+            'value' => [
+                'foo' => ['value' => 'foo'],
+                'bar' => ['value' => 'bar'],
+            ],
+        ]);
 
         $this->assertNotNull($o->value['foo']);
         $this->assertSame('foo', $o->value['foo']->value);
@@ -618,10 +634,12 @@ class HydratorTest extends TestCase
 
     public function testHydrateAssociationCollectionPropertyUsingDataObject(): void
     {
-        $o = (new Hydrator())->hydrate(Fixtures\ObjectWithAssociations::class, ['value' => (object) [
-            'foo' => (object) ['value' => 'foo'],
-            'bar' => (object) ['value' => 'bar'],
-        ]]);
+        $o = (new Hydrator())->hydrate(Fixtures\ObjectWithAssociations::class, [
+            'value' => (object) [
+                'foo' => (object) ['value' => 'foo'],
+                'bar' => (object) ['value' => 'bar'],
+            ],
+        ]);
 
         $this->assertNotNull($o->value['foo']);
         $this->assertSame('foo', $o->value['foo']->value);
@@ -720,5 +738,52 @@ class HydratorTest extends TestCase
         $this->assertSame('3635627a-e348-4ca4-8e62-4e5cd78043d2', $product->tags[0]->name);
         $this->assertSame('dccd816f-bb28-41f3-b1a9-ddaff1fdec5b', $product->tags[1]->name);
         $this->assertSame(2, $product->status->value);
+    }
+
+    public function testHydrateAbstractObject(): void
+    {
+        $o = (new Hydrator())->hydrate(Apple::class, [
+            'type'      => 'sauce',
+            'sweetness' => 100,
+            'category'  => null,
+        ]);
+
+        $this->assertInstanceOf(AppleSauce::class, $o);
+        $this->assertSame('sauce', $o->type);
+        $this->assertSame(100, $o->sweetness);
+    }
+
+    public function testHydrateAbstractObjectWithoutInterface(): void
+    {
+        $this->expectException(InvalidObjectException::class);
+
+        (new Hydrator())->hydrate(Fruit::class, ['name' => 'apple']);
+    }
+
+    public function testHydrateAbstractProperty(): void
+    {
+        $o = (new Hydrator())->hydrate(new ObjectWithAbstract(), [
+            'value' => [
+                'type'      => 'jack',
+                'sweetness' => null,
+                'category'  => 'brandy',
+            ],
+        ]);
+
+        $this->assertInstanceOf(ObjectWithAbstract::class, $o);
+        $this->assertInstanceOf(AppleJack::class, $o->value);
+        $this->assertSame('jack', $o->value->type);
+        $this->assertSame('brandy', $o->value->category);
+    }
+
+    public function testHydrateInvalidAbstractObject(): void
+    {
+        $this->expectException(InvalidObjectException::class);
+
+        (new Hydrator())->hydrate(new ObjectWithInvalidAbstract(), [
+            'value' => [
+                'name' => 'apple',
+            ],
+        ]);
     }
 }
