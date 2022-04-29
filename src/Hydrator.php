@@ -2,6 +2,7 @@
 
 namespace SergiX44\Hydrator;
 
+use SergiX44\Hydrator\Exception\InvalidObjectException;
 use function array_key_exists;
 use BackedEnum;
 use function class_exists;
@@ -72,7 +73,7 @@ class Hydrator implements HydratorInterface
             $data = get_object_vars($data);
         }
 
-        $object = $this->initializeObject($object);
+        $object = $this->initializeObject($object, $data);
 
         $class = new ReflectionClass($object);
         foreach ($class->getProperties() as $property) {
@@ -180,7 +181,7 @@ class Hydrator implements HydratorInterface
      *
      * @template T
      */
-    private function initializeObject(string|object $object): object
+    private function initializeObject(string|object $object, array|object $data): object
     {
         if (is_object($object)) {
             return $object;
@@ -194,6 +195,21 @@ class Hydrator implements HydratorInterface
         }
 
         $class = new ReflectionClass($object);
+
+        if($class->isAbstract()){
+            if(!$class->implementsInterface(AbstractClassResolver::class)){
+                throw new InvalidObjectException(sprintf(
+                    'The given abstract object must implement %s.',
+                    AbstractClassResolver::class
+                ));
+            }
+
+            $resolveMethod = $class->getMethod('resolveAbstractClass');
+            $realClass = $resolveMethod->invoke(null, $data);
+
+            return $this->initializeObject($realClass, $data);
+        }
+
         $constructor = $class->getConstructor();
         if (isset($constructor) && $constructor->getNumberOfRequiredParameters() > 0) {
             throw new InvalidArgumentException(sprintf(
