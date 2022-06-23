@@ -10,7 +10,6 @@ use SergiX44\Hydrator\Tests\Fixtures\Store\AppleSauce;
 #[Attribute(Attribute::TARGET_CLASS)]
 class AppleResolver extends ConcreteResolver
 {
-
     public function getConcreteClass(array $data): string
     {
         return match ($data['type']) {

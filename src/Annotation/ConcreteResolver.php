@@ -13,7 +13,8 @@ use Attribute;
 abstract class ConcreteResolver
 {
     /**
-     * @param  array  $data
+     * @param array $data
+     *
      * @return string
      */
     abstract public function getConcreteClass(array $data): string;

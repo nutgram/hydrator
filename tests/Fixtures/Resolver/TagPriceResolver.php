@@ -6,7 +6,6 @@ use Attribute;
 use ReflectionType;
 use ReflectionUnionType;
 use SergiX44\Hydrator\Annotation\UnionResolver;
-use SergiX44\Hydrator\UnionTypeResolver;
 
 #[Attribute(Attribute::TARGET_PROPERTY)]
 class TagPriceResolver extends UnionResolver
