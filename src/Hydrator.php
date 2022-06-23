@@ -2,28 +2,12 @@
 
 namespace SergiX44\Hydrator;
 
-use function array_key_exists;
 use BackedEnum;
-use function class_exists;
-use function ctype_digit;
 use DateInterval;
 use DateTime;
 use DateTimeImmutable;
-use const FILTER_NULL_ON_FAILURE;
-use const FILTER_VALIDATE_BOOLEAN;
-use const FILTER_VALIDATE_FLOAT;
-use const FILTER_VALIDATE_INT;
-use function filter_var;
-use function get_object_vars;
-use function implode;
 use InvalidArgumentException;
-use function is_array;
-use function is_bool;
-use function is_float;
-use function is_int;
-use function is_object;
-use function is_string;
-use function is_subclass_of;
+use ReflectionAttribute;
 use ReflectionClass;
 use ReflectionEnum;
 use ReflectionNamedType;
@@ -31,21 +15,46 @@ use ReflectionProperty;
 use ReflectionUnionType;
 use SergiX44\Hydrator\Annotation\Alias;
 use SergiX44\Hydrator\Annotation\ArrayType;
+use SergiX44\Hydrator\Annotation\ConcreteResolver;
 use SergiX44\Hydrator\Annotation\UnionResolver;
 use SergiX44\Hydrator\Exception\InvalidObjectException;
+use function array_key_exists;
+use function class_exists;
+use function ctype_digit;
+use function filter_var;
+use function get_object_vars;
+use function implode;
+use function is_array;
+use function is_bool;
+use function is_float;
+use function is_int;
+use function is_object;
+use function is_string;
+use function is_subclass_of;
 use function sprintf;
 use function strtotime;
+use const FILTER_NULL_ON_FAILURE;
+use const FILTER_VALIDATE_BOOLEAN;
+use const FILTER_VALIDATE_FLOAT;
+use const FILTER_VALIDATE_INT;
 
 class Hydrator implements HydratorInterface
 {
     /**
      * Hydrates the given object with the given data.
      *
-     * @param class-string<T>|T $object
-     * @param array|object      $data
+     * @param  class-string<T>|T  $object
+     * @param  array|object  $data
      *
-     * @throws Exception\HydrationException
-     *                                                    If the object cannot be hydrated.
+     * @return T
+     *
+     *
+     *
+     *
+     *
+     *
+     *
+     * @template T
      * @throws InvalidArgumentException
      *                                                    If the data isn't valid.
      * @throws Exception\UntypedPropertyException
@@ -57,15 +66,8 @@ class Hydrator implements HydratorInterface
      * @throws Exception\InvalidValueException
      *                                                    If the given data contains an invalid value.
      *
-     * @return T
-     *
-     *
-     *
-     *
-     *
-     *
-     *
-     * @template T
+     * @throws Exception\HydrationException
+     *                                                    If the object cannot be hydrated.
      */
     public function hydrate(string|object $object, array|object $data): object
     {
@@ -95,14 +97,14 @@ class Hydrator implements HydratorInterface
 
             $key = $property->getName();
             if (!array_key_exists($key, $data)) {
-                $alias = $this->getPropertyAttribute($property, Alias::class);
+                $alias = $this->getAttributeInstance($property, Alias::class);
                 if (isset($alias)) {
                     $key = $alias->value;
                 }
             }
 
             if ($propertyType instanceof ReflectionUnionType) {
-                $resolver = $this->getPropertyAttribute($property, UnionResolver::class);
+                $resolver = $this->getAttributeInstance($property, UnionResolver::class, ReflectionAttribute::IS_INSTANCEOF);
                 if (isset($resolver)) {
                     $propertyType = $resolver->resolve($propertyType, $data[$key]);
                 } else {
@@ -135,20 +137,20 @@ class Hydrator implements HydratorInterface
     /**
      * Hydrates the given object with the given JSON.
      *
-     * @param class-string<T>|T $object
-     * @param string            $json
-     * @param ?int              $flags
-     *
-     * @throws Exception\HydrationException
-     *                                      If the object cannot be hydrated.
-     * @throws InvalidArgumentException
-     *                                      If the JSON cannot be decoded.
+     * @param  class-string<T>|T  $object
+     * @param  string  $json
+     * @param ?int  $flags
      *
      * @return T
      *
      *
      *
      * @template T
+     * @throws InvalidArgumentException
+     *                                      If the JSON cannot be decoded.
+     *
+     * @throws Exception\HydrationException
+     *                                      If the object cannot be hydrated.
      */
     public function hydrateWithJson(string|object $object, string $json, ?int $flags = null): object
     {
@@ -171,15 +173,15 @@ class Hydrator implements HydratorInterface
     /**
      * Initializes the given object.
      *
-     * @param class-string<T>|T $object
-     *
-     * @throws InvalidArgumentException
-     *                                  If the object cannot be initialized.
+     * @param  class-string<T>|T  $object
      *
      * @return T
      *
      *
      * @template T
+     * @throws InvalidArgumentException
+     *                                  If the object cannot be initialized.
+     *
      */
     private function initializeObject(string|object $object, array|object $data): object
     {
@@ -194,32 +196,31 @@ class Hydrator implements HydratorInterface
             ));
         }
 
-        $class = new ReflectionClass($object);
+        $reflectionClass = new ReflectionClass($object);
 
-        if ($class->isAbstract()) {
-            if (!$class->implementsInterface(ConcreteResolver::class)) {
+        if ($reflectionClass->isAbstract()) {
+            $attribute = $this->getAttributeInstance($reflectionClass, ConcreteResolver::class, ReflectionAttribute::IS_INSTANCEOF);
+
+            if ($attribute === null) {
                 throw new InvalidObjectException(sprintf(
-                    'The given abstract object must implement %s.',
-                    ConcreteResolver::class
+                    'The %s class cannot be instantiated. Please define a concrete resolver attribute.',
+                    $object
                 ));
             }
 
-            $resolveMethod = $class->getMethod('resolveAbstractClass');
-            $realClass = $resolveMethod->invoke(null, $data);
-
-            return $this->initializeObject($realClass, $data);
+            return $this->initializeObject($attribute->getConcreteClass($data), $data);
         }
 
-        $constructor = $class->getConstructor();
+        $constructor = $reflectionClass->getConstructor();
         if (isset($constructor) && $constructor->getNumberOfRequiredParameters() > 0) {
             throw new InvalidArgumentException(sprintf(
                 'The %s object cannot be hydrated because its constructor has required parameters.',
-                $class->getName()
+                $reflectionClass->getName()
             ));
         }
 
         /** @var T */
-        return $class->newInstance();
+        return $reflectionClass->newInstance();
     }
 
     /**
@@ -227,14 +228,14 @@ class Hydrator implements HydratorInterface
      *
      * @template T
      *
-     * @param ReflectionProperty $property
-     * @param class-string<T>    $class
-     *
+     * @param  ReflectionProperty|ReflectionClass  $target
+     * @param  class-string<T>  $class
+     * @param  int  $criteria
      * @return T|null
      */
-    private function getPropertyAttribute(ReflectionProperty $property, string $class): mixed
+    private function getAttributeInstance(ReflectionProperty|ReflectionClass $target, string $class, int $criteria = 0): mixed
     {
-        $attributes = $property->getAttributes($class);
+        $attributes = $target->getAttributes($class, $criteria);
         if (isset($attributes[0])) {
             return $attributes[0]->newInstance();
         }
@@ -245,18 +246,18 @@ class Hydrator implements HydratorInterface
     /**
      * Hydrates the given property with the given value.
      *
-     * @param object              $object
-     * @param ReflectionClass     $class
-     * @param ReflectionProperty  $property
-     * @param ReflectionNamedType $type
-     * @param mixed               $value
+     * @param  object  $object
+     * @param  ReflectionClass  $class
+     * @param  ReflectionProperty  $property
+     * @param  ReflectionNamedType  $type
+     * @param  mixed  $value
      *
-     * @throws Exception\InvalidValueException
-     *                                                    If the given value isn't valid.
+     * @return void
      * @throws Exception\UnsupportedPropertyTypeException
      *                                                    If the given property contains an unsupported type.
      *
-     * @return void
+     * @throws Exception\InvalidValueException
+     *                                                    If the given value isn't valid.
      */
     private function hydrateProperty(
         object $object,
@@ -303,15 +304,15 @@ class Hydrator implements HydratorInterface
     /**
      * Hydrates the given property with null.
      *
-     * @param object              $object
-     * @param ReflectionClass     $class
-     * @param ReflectionProperty  $property
-     * @param ReflectionNamedType $type
+     * @param  object  $object
+     * @param  ReflectionClass  $class
+     * @param  ReflectionProperty  $property
+     * @param  ReflectionNamedType  $type
      *
+     * @return void
      * @throws Exception\InvalidValueException
      *                                         If the given value isn't valid.
      *
-     * @return void
      */
     private function propertyNull(
         object $object,
@@ -333,16 +334,16 @@ class Hydrator implements HydratorInterface
     /**
      * Hydrates the given property with the given boolean value.
      *
-     * @param object              $object
-     * @param ReflectionClass     $class
-     * @param ReflectionProperty  $property
-     * @param ReflectionNamedType $type
-     * @param mixed               $value
+     * @param  object  $object
+     * @param  ReflectionClass  $class
+     * @param  ReflectionProperty  $property
+     * @param  ReflectionNamedType  $type
+     * @param  mixed  $value
      *
+     * @return void
      * @throws Exception\InvalidValueException
      *                                         If the given value isn't valid.
      *
-     * @return void
      */
     private function propertyBool(
         object $object,
@@ -372,16 +373,16 @@ class Hydrator implements HydratorInterface
     /**
      * Hydrates the given property with the given integer number.
      *
-     * @param object              $object
-     * @param ReflectionClass     $class
-     * @param ReflectionProperty  $property
-     * @param ReflectionNamedType $type
-     * @param mixed               $value
+     * @param  object  $object
+     * @param  ReflectionClass  $class
+     * @param  ReflectionProperty  $property
+     * @param  ReflectionNamedType  $type
+     * @param  mixed  $value
      *
+     * @return void
      * @throws Exception\InvalidValueException
      *                                         If the given value isn't valid.
      *
-     * @return void
      */
     private function propertyInt(
         object $object,
@@ -413,16 +414,16 @@ class Hydrator implements HydratorInterface
     /**
      * Hydrates the given property with the given number.
      *
-     * @param object              $object
-     * @param ReflectionClass     $class
-     * @param ReflectionProperty  $property
-     * @param ReflectionNamedType $type
-     * @param mixed               $value
+     * @param  object  $object
+     * @param  ReflectionClass  $class
+     * @param  ReflectionProperty  $property
+     * @param  ReflectionNamedType  $type
+     * @param  mixed  $value
      *
+     * @return void
      * @throws Exception\InvalidValueException
      *                                         If the given value isn't valid.
      *
-     * @return void
      */
     private function propertyFloat(
         object $object,
@@ -452,16 +453,16 @@ class Hydrator implements HydratorInterface
     /**
      * Hydrates the given property with the given string.
      *
-     * @param object              $object
-     * @param ReflectionClass     $class
-     * @param ReflectionProperty  $property
-     * @param ReflectionNamedType $type
-     * @param mixed               $value
+     * @param  object  $object
+     * @param  ReflectionClass  $class
+     * @param  ReflectionProperty  $property
+     * @param  ReflectionNamedType  $type
+     * @param  mixed  $value
      *
+     * @return void
      * @throws Exception\InvalidValueException
      *                                         If the given value isn't valid.
      *
-     * @return void
      */
     private function propertyString(
         object $object,
@@ -484,16 +485,16 @@ class Hydrator implements HydratorInterface
     /**
      * Hydrates the given property with the given array.
      *
-     * @param object              $object
-     * @param ReflectionClass     $class
-     * @param ReflectionProperty  $property
-     * @param ReflectionNamedType $type
-     * @param mixed               $value
+     * @param  object  $object
+     * @param  ReflectionClass  $class
+     * @param  ReflectionProperty  $property
+     * @param  ReflectionNamedType  $type
+     * @param  mixed  $value
      *
+     * @return void
      * @throws Exception\InvalidValueException
      *                                         If the given value isn't valid.
      *
-     * @return void
      */
     private function propertyArray(
         object $object,
@@ -514,7 +515,7 @@ class Hydrator implements HydratorInterface
             ));
         }
 
-        $arrayType = $this->getPropertyAttribute($property, ArrayType::class);
+        $arrayType = $this->getAttributeInstance($property, ArrayType::class);
         if ($arrayType !== null) {
             $value = $this->hydrateObjectsInArray($value, $arrayType, $arrayType->depth);
         }
@@ -523,13 +524,13 @@ class Hydrator implements HydratorInterface
     }
 
     /**
-     * @param array     $array
-     * @param ArrayType $arrayType
-     * @param int       $depth
-     *
-     * @throws \ReflectionException
+     * @param  array  $array
+     * @param  ArrayType  $arrayType
+     * @param  int  $depth
      *
      * @return array
+     * @throws \ReflectionException
+     *
      */
     private function hydrateObjectsInArray(array $array, ArrayType $arrayType, int $depth): array
     {
@@ -547,16 +548,16 @@ class Hydrator implements HydratorInterface
     /**
      * Hydrates the given property with the given object.
      *
-     * @param object              $object
-     * @param ReflectionClass     $class
-     * @param ReflectionProperty  $property
-     * @param ReflectionNamedType $type
-     * @param mixed               $value
+     * @param  object  $object
+     * @param  ReflectionClass  $class
+     * @param  ReflectionProperty  $property
+     * @param  ReflectionNamedType  $type
+     * @param  mixed  $value
      *
+     * @return void
      * @throws Exception\InvalidValueException
      *                                         If the given value isn't valid.
      *
-     * @return void
      */
     private function propertyObject(
         object $object,
@@ -579,16 +580,16 @@ class Hydrator implements HydratorInterface
     /**
      * Hydrates the given property with the given date-time.
      *
-     * @param object              $object
-     * @param ReflectionClass     $class
-     * @param ReflectionProperty  $property
-     * @param ReflectionNamedType $type
-     * @param mixed               $value
+     * @param  object  $object
+     * @param  ReflectionClass  $class
+     * @param  ReflectionProperty  $property
+     * @param  ReflectionNamedType  $type
+     * @param  mixed  $value
      *
+     * @return void
      * @throws Exception\InvalidValueException
      *                                         If the given value isn't valid.
      *
-     * @return void
      */
     private function propertyDateTime(
         object $object,
@@ -618,16 +619,16 @@ class Hydrator implements HydratorInterface
     /**
      * Hydrates the given property with the given date-interval.
      *
-     * @param object              $object
-     * @param ReflectionClass     $class
-     * @param ReflectionProperty  $property
-     * @param ReflectionNamedType $type
-     * @param mixed               $value
+     * @param  object  $object
+     * @param  ReflectionClass  $class
+     * @param  ReflectionProperty  $property
+     * @param  ReflectionNamedType  $type
+     * @param  mixed  $value
      *
+     * @return void
      * @throws Exception\InvalidValueException
      *                                         If the given value isn't valid.
      *
-     * @return void
      */
     private function propertyDateInterval(
         object $object,
@@ -663,16 +664,16 @@ class Hydrator implements HydratorInterface
     /**
      * Hydrates the given property with the given backed-enum.
      *
-     * @param object              $object
-     * @param ReflectionClass     $class
-     * @param ReflectionProperty  $property
-     * @param ReflectionNamedType $type
-     * @param mixed               $value
+     * @param  object  $object
+     * @param  ReflectionClass  $class
+     * @param  ReflectionProperty  $property
+     * @param  ReflectionNamedType  $type
+     * @param  mixed  $value
      *
+     * @return void
      * @throws Exception\InvalidValueException
      *                                         If the given value isn't valid.
      *
-     * @return void
      */
     private function propertyBackedEnum(
         object $object,
@@ -725,16 +726,16 @@ class Hydrator implements HydratorInterface
     /**
      * Hydrates the given property with the given one association.
      *
-     * @param object              $object
-     * @param ReflectionClass     $class
-     * @param ReflectionProperty  $property
-     * @param ReflectionNamedType $type
-     * @param mixed               $value
+     * @param  object  $object
+     * @param  ReflectionClass  $class
+     * @param  ReflectionProperty  $property
+     * @param  ReflectionNamedType  $type
+     * @param  mixed  $value
      *
+     * @return void
      * @throws Exception\InvalidValueException
      *                                         If the given value isn't valid.
      *
-     * @return void
      */
     private function propertyFromInstance(
         object $object,
