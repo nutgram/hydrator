@@ -5,7 +5,6 @@ namespace SergiX44\Hydrator\Annotation;
 use Attribute;
 use ReflectionType;
 use ReflectionUnionType;
-use SergiX44\Hydrator\UnionTypeResolver;
 
 /**
  * @Annotation
@@ -16,10 +15,12 @@ use SergiX44\Hydrator\UnionTypeResolver;
 abstract class UnionResolver
 {
     /**
-     * @param  ReflectionUnionType  $type
-     * @param  array  $data
-     * @return ReflectionType
+     * @param ReflectionUnionType $type
+     * @param array               $data
+     *
      * @throws \ReflectionException
+     *
+     * @return ReflectionType
      */
     abstract public function resolve(ReflectionUnionType $type, array $data): ReflectionType;
 }
