@@ -2,19 +2,10 @@
 
 namespace SergiX44\Hydrator\Tests\Fixtures\Store;
 
-use Exception;
-use SergiX44\Hydrator\ConcreteResolver;
+use SergiX44\Hydrator\Tests\Fixtures\Resolver\AppleResolver;
 
-abstract class Apple implements ConcreteResolver
+#[AppleResolver]
+abstract class Apple
 {
     public string $type;
-
-    public static function resolveAbstractClass(array $data): string
-    {
-        return match ($data['type']) {
-            'jack'  => AppleJack::class,
-            'sauce' => AppleSauce::class,
-            default => throw new Exception('Invalid apple type'),
-        };
-    }
 }

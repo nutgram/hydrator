@@ -24,6 +24,7 @@ use function is_int;
 use function is_object;
 use function is_string;
 use function is_subclass_of;
+use ReflectionAttribute;
 use ReflectionClass;
 use ReflectionEnum;
 use ReflectionNamedType;
@@ -31,6 +32,7 @@ use ReflectionProperty;
 use ReflectionUnionType;
 use SergiX44\Hydrator\Annotation\Alias;
 use SergiX44\Hydrator\Annotation\ArrayType;
+use SergiX44\Hydrator\Annotation\ConcreteResolver;
 use SergiX44\Hydrator\Annotation\UnionResolver;
 use SergiX44\Hydrator\Exception\InvalidObjectException;
 use function sprintf;
@@ -44,8 +46,6 @@ class Hydrator implements HydratorInterface
      * @param class-string<T>|T $object
      * @param array|object      $data
      *
-     * @throws Exception\HydrationException
-     *                                                    If the object cannot be hydrated.
      * @throws InvalidArgumentException
      *                                                    If the data isn't valid.
      * @throws Exception\UntypedPropertyException
@@ -56,6 +56,8 @@ class Hydrator implements HydratorInterface
      *                                                    If the given data doesn't contain required value.
      * @throws Exception\InvalidValueException
      *                                                    If the given data contains an invalid value.
+     * @throws Exception\HydrationException
+     *                                                    If the object cannot be hydrated.
      *
      * @return T
      *
@@ -95,14 +97,14 @@ class Hydrator implements HydratorInterface
 
             $key = $property->getName();
             if (!array_key_exists($key, $data)) {
-                $alias = $this->getPropertyAttribute($property, Alias::class);
+                $alias = $this->getAttributeInstance($property, Alias::class);
                 if (isset($alias)) {
                     $key = $alias->value;
                 }
             }
 
             if ($propertyType instanceof ReflectionUnionType) {
-                $resolver = $this->getPropertyAttribute($property, UnionResolver::class);
+                $resolver = $this->getAttributeInstance($property, UnionResolver::class, ReflectionAttribute::IS_INSTANCEOF);
                 if (isset($resolver)) {
                     $propertyType = $resolver->resolve($propertyType, $data[$key]);
                 } else {
@@ -139,10 +141,10 @@ class Hydrator implements HydratorInterface
      * @param string            $json
      * @param ?int              $flags
      *
-     * @throws Exception\HydrationException
-     *                                      If the object cannot be hydrated.
      * @throws InvalidArgumentException
      *                                      If the JSON cannot be decoded.
+     * @throws Exception\HydrationException
+     *                                      If the object cannot be hydrated.
      *
      * @return T
      *
@@ -194,32 +196,31 @@ class Hydrator implements HydratorInterface
             ));
         }
 
-        $class = new ReflectionClass($object);
+        $reflectionClass = new ReflectionClass($object);
 
-        if ($class->isAbstract()) {
-            if (!$class->implementsInterface(ConcreteResolver::class)) {
+        if ($reflectionClass->isAbstract()) {
+            $attribute = $this->getAttributeInstance($reflectionClass, ConcreteResolver::class, ReflectionAttribute::IS_INSTANCEOF);
+
+            if ($attribute === null) {
                 throw new InvalidObjectException(sprintf(
-                    'The given abstract object must implement %s.',
-                    ConcreteResolver::class
+                    'The %s class cannot be instantiated. Please define a concrete resolver attribute.',
+                    $object
                 ));
             }
 
-            $resolveMethod = $class->getMethod('resolveAbstractClass');
-            $realClass = $resolveMethod->invoke(null, $data);
-
-            return $this->initializeObject($realClass, $data);
+            return $this->initializeObject($attribute->getConcreteClass($data), $data);
         }
 
-        $constructor = $class->getConstructor();
+        $constructor = $reflectionClass->getConstructor();
         if (isset($constructor) && $constructor->getNumberOfRequiredParameters() > 0) {
             throw new InvalidArgumentException(sprintf(
                 'The %s object cannot be hydrated because its constructor has required parameters.',
-                $class->getName()
+                $reflectionClass->getName()
             ));
         }
 
         /** @var T */
-        return $class->newInstance();
+        return $reflectionClass->newInstance();
     }
 
     /**
@@ -227,14 +228,15 @@ class Hydrator implements HydratorInterface
      *
      * @template T
      *
-     * @param ReflectionProperty $property
-     * @param class-string<T>    $class
+     * @param ReflectionProperty|ReflectionClass $target
+     * @param class-string<T>                    $class
+     * @param int                                $criteria
      *
      * @return T|null
      */
-    private function getPropertyAttribute(ReflectionProperty $property, string $class): mixed
+    private function getAttributeInstance(ReflectionProperty|ReflectionClass $target, string $class, int $criteria = 0): mixed
     {
-        $attributes = $property->getAttributes($class);
+        $attributes = $target->getAttributes($class, $criteria);
         if (isset($attributes[0])) {
             return $attributes[0]->newInstance();
         }
@@ -251,10 +253,10 @@ class Hydrator implements HydratorInterface
      * @param ReflectionNamedType $type
      * @param mixed               $value
      *
-     * @throws Exception\InvalidValueException
-     *                                                    If the given value isn't valid.
      * @throws Exception\UnsupportedPropertyTypeException
      *                                                    If the given property contains an unsupported type.
+     * @throws Exception\InvalidValueException
+     *                                                    If the given value isn't valid.
      *
      * @return void
      */
@@ -514,7 +516,7 @@ class Hydrator implements HydratorInterface
             ));
         }
 
-        $arrayType = $this->getPropertyAttribute($property, ArrayType::class);
+        $arrayType = $this->getAttributeInstance($property, ArrayType::class);
         if ($arrayType !== null) {
             $value = $this->hydrateObjectsInArray($value, $arrayType, $arrayType->depth);
         }
