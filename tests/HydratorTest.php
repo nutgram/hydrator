@@ -790,7 +790,7 @@ class HydratorTest extends TestCase
         ]);
     }
 
-    public function testHydrateWithMissingData(): void
+    public function testHydrateWithContainerNoFilter(): void
     {
         $container = new Container();
         $container->delegate(new ReflectionContainer());
@@ -805,5 +805,34 @@ class HydratorTest extends TestCase
 
         $this->assertSame('foo', $o->name);
         $this->assertInstanceOf(Tag::class, $o->getTag());
+    }
+
+    /**
+     * @dataProvider providerContainerFilter
+     */
+    public function testHydrateWithContainerWithFilter(array $filter, bool $valid): void
+    {
+        $container = new Container();
+        $container->delegate(new ReflectionContainer());
+        $container->addShared(Tag::class, new Tag());
+
+        $hydrator = new Hydrator();
+        $hydrator->setContainer($container);
+        $hydrator->setTypesResolvedByContainer($filter);
+
+        $o = $hydrator->hydrate(new ObjectWithMissingData(), [
+            'name' => 'foo',
+        ]);
+
+        $this->assertSame('foo', $o->name);
+        $this->assertSame($o->getTag() instanceof Tag, $valid);
+    }
+
+    public function providerContainerFilter(): array
+    {
+        return [
+            'empty' => [[], false],
+            'full' => [[Tag::class], true],
+        ];
     }
 }
