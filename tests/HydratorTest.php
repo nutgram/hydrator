@@ -832,7 +832,7 @@ class HydratorTest extends TestCase
     {
         return [
             'empty' => [[], false],
-            'full' => [[Tag::class], true],
+            'full'  => [[Tag::class], true],
         ];
     }
 }
