@@ -2,7 +2,6 @@
 
 namespace SergiX44\Hydrator;
 
-use Psr\Container\ContainerInterface;
 use function array_key_exists;
 use BackedEnum;
 use function class_exists;
@@ -25,6 +24,7 @@ use function is_int;
 use function is_object;
 use function is_string;
 use function is_subclass_of;
+use Psr\Container\ContainerInterface;
 use ReflectionAttribute;
 use ReflectionClass;
 use ReflectionEnum;
@@ -46,6 +46,7 @@ class Hydrator implements HydratorInterface
     public function setContainer(ContainerInterface $container): self
     {
         $this->container = $container;
+
         return $this;
     }
 
