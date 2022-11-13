@@ -41,7 +41,7 @@ use function strtotime;
 
 class Hydrator implements HydratorInterface
 {
-    protected ?ContainerInterface $container;
+    protected ?ContainerInterface $container = null;
 
     public function setContainer(ContainerInterface $container): self
     {
