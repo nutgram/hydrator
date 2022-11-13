@@ -3,6 +3,8 @@
 namespace SergiX44\Hydrator\Tests;
 
 use InvalidArgumentException;
+use League\Container\Container;
+use League\Container\ReflectionContainer;
 use PHPUnit\Framework\TestCase;
 use SergiX44\Hydrator\Exception;
 use SergiX44\Hydrator\Exception\InvalidObjectException;
@@ -10,6 +12,7 @@ use SergiX44\Hydrator\Hydrator;
 use SergiX44\Hydrator\HydratorInterface;
 use SergiX44\Hydrator\Tests\Fixtures\ObjectWithAbstract;
 use SergiX44\Hydrator\Tests\Fixtures\ObjectWithInvalidAbstract;
+use SergiX44\Hydrator\Tests\Fixtures\ObjectWithMissingData;
 use SergiX44\Hydrator\Tests\Fixtures\Store\Apple;
 use SergiX44\Hydrator\Tests\Fixtures\Store\AppleJack;
 use SergiX44\Hydrator\Tests\Fixtures\Store\AppleSauce;
@@ -785,5 +788,22 @@ class HydratorTest extends TestCase
                 'name' => 'apple',
             ],
         ]);
+    }
+
+    public function testHydrateWithMissingData(): void
+    {
+        $container = new Container();
+        $container->delegate(new ReflectionContainer());
+        $container->addShared(Tag::class, new Tag());
+
+        $hydrator = new Hydrator();
+        $hydrator->setContainer($container);
+
+        $o = $hydrator->hydrate(new ObjectWithMissingData(), [
+            'name' => 'foo',
+        ]);
+
+        $this->assertSame('foo', $o->name);
+        $this->assertInstanceOf(Tag::class, $o->getTag());
     }
 }

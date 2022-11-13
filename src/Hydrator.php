@@ -2,6 +2,7 @@
 
 namespace SergiX44\Hydrator;
 
+use Psr\Container\ContainerInterface;
 use function array_key_exists;
 use BackedEnum;
 use function class_exists;
@@ -40,6 +41,14 @@ use function strtotime;
 
 class Hydrator implements HydratorInterface
 {
+    protected ?ContainerInterface $container;
+
+    public function setContainer(ContainerInterface $container): self
+    {
+        $this->container = $container;
+        return $this;
+    }
+
     /**
      * Hydrates the given object with the given data.
      *
@@ -117,6 +126,12 @@ class Hydrator implements HydratorInterface
             }
 
             if (!array_key_exists($key, $data)) {
+                //resolve through container
+                if ($this->container !== null && $this->container->has($propertyType->getName())) {
+                    $property->setValue($object, $this->container->get($propertyType->getName()));
+                    continue;
+                }
+
                 if (!$property->isInitialized($object)) {
                     throw new Exception\MissingRequiredValueException($property, sprintf(
                         'The %s.%s property is required.',
