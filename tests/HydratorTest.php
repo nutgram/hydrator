@@ -10,9 +10,10 @@ use SergiX44\Hydrator\Exception;
 use SergiX44\Hydrator\Exception\InvalidObjectException;
 use SergiX44\Hydrator\Hydrator;
 use SergiX44\Hydrator\HydratorInterface;
+use SergiX44\Hydrator\Tests\Fixtures\DI\Sun;
+use SergiX44\Hydrator\Tests\Fixtures\DI\Tree;
 use SergiX44\Hydrator\Tests\Fixtures\ObjectWithAbstract;
 use SergiX44\Hydrator\Tests\Fixtures\ObjectWithInvalidAbstract;
-use SergiX44\Hydrator\Tests\Fixtures\ObjectWithMissingData;
 use SergiX44\Hydrator\Tests\Fixtures\Store\Apple;
 use SergiX44\Hydrator\Tests\Fixtures\Store\AppleJack;
 use SergiX44\Hydrator\Tests\Fixtures\Store\AppleSauce;
@@ -790,49 +791,34 @@ class HydratorTest extends TestCase
         ]);
     }
 
-    public function testHydrateWithContainerNoFilter(): void
+    public function testHydrateWithContainer(): void
     {
+        $sun = new Sun('andromeda');
+
         $container = new Container();
         $container->delegate(new ReflectionContainer());
-        $container->addShared(Tag::class, new Tag());
+        $container->addShared(Sun::class, $sun);
 
-        $hydrator = new Hydrator();
-        $hydrator->setContainer($container);
+        $hydrator = new Hydrator($container);
 
-        $o = $hydrator->hydrate(new ObjectWithMissingData(), [
-            'name' => 'foo',
+        $o = $hydrator->hydrate(Tree::class, [
+            'name'   => 'foo',
+            'leaves' => [
+                'n' => 100,
+            ],
+            'wood' => [
+                'kg' => 120,
+            ],
         ]);
 
         $this->assertSame('foo', $o->name);
-        $this->assertInstanceOf(Tag::class, $o->getTag());
-    }
-
-    /**
-     * @dataProvider providerContainerFilter
-     */
-    public function testHydrateWithContainerWithFilter(array $filter, bool $valid): void
-    {
-        $container = new Container();
-        $container->delegate(new ReflectionContainer());
-        $container->addShared(Tag::class, new Tag());
-
-        $hydrator = new Hydrator();
-        $hydrator->setContainer($container);
-        $hydrator->setTypesResolvedByContainer($filter);
-
-        $o = $hydrator->hydrate(new ObjectWithMissingData(), [
-            'name' => 'foo',
-        ]);
-
-        $this->assertSame('foo', $o->name);
-        $this->assertSame($o->getTag() instanceof Tag, $valid);
-    }
-
-    public function providerContainerFilter(): array
-    {
-        return [
-            'empty' => [[], false],
-            'full'  => [[Tag::class], true],
-        ];
+        $this->assertSame(100, $o->leaves->n);
+        $this->assertSame(120, $o->wood->kg);
+        $this->assertNotNull($o->getSun());
+        $this->assertNotNull($o->leaves->getSun());
+        $this->assertNotNull($o->wood->getSun());
+        $this->assertSame($sun, $o->getSun());
+        $this->assertSame($sun, $o->leaves->getSun());
+        $this->assertSame($sun, $o->wood->getSun());
     }
 }

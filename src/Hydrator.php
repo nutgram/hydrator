@@ -24,6 +24,7 @@ use function is_int;
 use function is_object;
 use function is_string;
 use function is_subclass_of;
+use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use ReflectionAttribute;
 use ReflectionClass;
@@ -42,48 +43,10 @@ use function strtotime;
 class Hydrator implements HydratorInterface
 {
     protected ?ContainerInterface $container = null;
-    protected ?array $typesResolvedByContainer = null;
 
-    public function setContainer(ContainerInterface $container): self
+    public function __construct(?ContainerInterface $container = null)
     {
         $this->container = $container;
-
-        return $this;
-    }
-
-    public function setTypesResolvedByContainer(array $typesResolvedByContainer): self
-    {
-        $this->typesResolvedByContainer = $typesResolvedByContainer;
-
-        return $this;
-    }
-
-    protected function resolveThroughContainer(
-        object $object,
-        ReflectionClass $class,
-        ReflectionProperty $property,
-        ReflectionNamedType $type,
-    ): bool {
-        if ($this->container === null) {
-            return false;
-        }
-
-        $propertyType = $property->getType();
-        if (!$this->container->has($propertyType->getName())) {
-            return false;
-        }
-
-        if ($this->typesResolvedByContainer === null || in_array(
-            $propertyType->getName(),
-            $this->typesResolvedByContainer,
-            true
-        )) {
-            $property->setValue($object, $this->container->get($propertyType->getName()));
-
-            return true;
-        }
-
-        return false;
     }
 
     /**
@@ -163,12 +126,6 @@ class Hydrator implements HydratorInterface
             }
 
             if (!array_key_exists($key, $data)) {
-                if ($this->resolveThroughContainer($object, $class, $property, $propertyType)) {
-                    continue;
-                }
-            }
-
-            if (!array_key_exists($key, $data)) {
                 if (!$property->isInitialized($object)) {
                     throw new Exception\MissingRequiredValueException($property, sprintf(
                         'The %s.%s property is required.',
@@ -227,8 +184,9 @@ class Hydrator implements HydratorInterface
      *
      * @param class-string<T>|T $object
      *
+     * @throws ContainerExceptionInterface
+     *                                     If the object cannot be initialized.
      * @throws InvalidArgumentException
-     *                                  If the object cannot be initialized.
      *
      * @return T
      *
@@ -261,6 +219,11 @@ class Hydrator implements HydratorInterface
             }
 
             return $this->initializeObject($attribute->getConcreteClass($data), $data);
+        }
+
+        // if we have a container, get the instance through it
+        if ($this->container !== null) {
+            return $this->container->get($object);
         }
 
         $constructor = $reflectionClass->getConstructor();
