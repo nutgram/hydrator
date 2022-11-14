@@ -4,7 +4,6 @@ namespace SergiX44\Hydrator\Tests\Fixtures\DI;
 
 class Wood
 {
-
     public int $kg;
 
     private Sun|null $sun = null;
