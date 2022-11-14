@@ -18,5 +18,4 @@ class Sun
     {
         return $this->from;
     }
-
 }

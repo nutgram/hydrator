@@ -2,11 +2,28 @@
 
 namespace SergiX44\Hydrator;
 
+use function array_key_exists;
 use BackedEnum;
+use function class_exists;
+use function ctype_digit;
 use DateInterval;
 use DateTime;
 use DateTimeImmutable;
+use const FILTER_NULL_ON_FAILURE;
+use const FILTER_VALIDATE_BOOLEAN;
+use const FILTER_VALIDATE_FLOAT;
+use const FILTER_VALIDATE_INT;
+use function filter_var;
+use function get_object_vars;
+use function implode;
 use InvalidArgumentException;
+use function is_array;
+use function is_bool;
+use function is_float;
+use function is_int;
+use function is_object;
+use function is_string;
+use function is_subclass_of;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use ReflectionAttribute;
@@ -20,25 +37,8 @@ use SergiX44\Hydrator\Annotation\ArrayType;
 use SergiX44\Hydrator\Annotation\ConcreteResolver;
 use SergiX44\Hydrator\Annotation\UnionResolver;
 use SergiX44\Hydrator\Exception\InvalidObjectException;
-use function array_key_exists;
-use function class_exists;
-use function ctype_digit;
-use function filter_var;
-use function get_object_vars;
-use function implode;
-use function is_array;
-use function is_bool;
-use function is_float;
-use function is_int;
-use function is_object;
-use function is_string;
-use function is_subclass_of;
 use function sprintf;
 use function strtotime;
-use const FILTER_NULL_ON_FAILURE;
-use const FILTER_VALIDATE_BOOLEAN;
-use const FILTER_VALIDATE_FLOAT;
-use const FILTER_VALIDATE_INT;
 
 class Hydrator implements HydratorInterface
 {
@@ -182,16 +182,16 @@ class Hydrator implements HydratorInterface
     /**
      * Initializes the given object.
      *
-     * @param  class-string<T>|T  $object
+     * @param class-string<T>|T $object
+     *
+     * @throws ContainerExceptionInterface
+     *                                     If the object cannot be initialized.
+     * @throws InvalidArgumentException
      *
      * @return T
      *
      *
      * @template T
-     * @throws ContainerExceptionInterface
-     *                                  If the object cannot be initialized.
-     *
-     * @throws InvalidArgumentException
      */
     private function initializeObject(string|object $object, array|object $data): object
     {

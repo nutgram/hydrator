@@ -24,5 +24,4 @@ class Tree
     {
         return $this->sun;
     }
-
 }
