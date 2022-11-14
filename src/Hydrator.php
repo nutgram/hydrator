@@ -2,28 +2,12 @@
 
 namespace SergiX44\Hydrator;
 
-use function array_key_exists;
 use BackedEnum;
-use function class_exists;
-use function ctype_digit;
 use DateInterval;
 use DateTime;
 use DateTimeImmutable;
-use const FILTER_NULL_ON_FAILURE;
-use const FILTER_VALIDATE_BOOLEAN;
-use const FILTER_VALIDATE_FLOAT;
-use const FILTER_VALIDATE_INT;
-use function filter_var;
-use function get_object_vars;
-use function implode;
 use InvalidArgumentException;
-use function is_array;
-use function is_bool;
-use function is_float;
-use function is_int;
-use function is_object;
-use function is_string;
-use function is_subclass_of;
+use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use ReflectionAttribute;
 use ReflectionClass;
@@ -36,54 +20,33 @@ use SergiX44\Hydrator\Annotation\ArrayType;
 use SergiX44\Hydrator\Annotation\ConcreteResolver;
 use SergiX44\Hydrator\Annotation\UnionResolver;
 use SergiX44\Hydrator\Exception\InvalidObjectException;
+use function array_key_exists;
+use function class_exists;
+use function ctype_digit;
+use function filter_var;
+use function get_object_vars;
+use function implode;
+use function is_array;
+use function is_bool;
+use function is_float;
+use function is_int;
+use function is_object;
+use function is_string;
+use function is_subclass_of;
 use function sprintf;
 use function strtotime;
+use const FILTER_NULL_ON_FAILURE;
+use const FILTER_VALIDATE_BOOLEAN;
+use const FILTER_VALIDATE_FLOAT;
+use const FILTER_VALIDATE_INT;
 
 class Hydrator implements HydratorInterface
 {
     protected ?ContainerInterface $container = null;
-    protected ?array $typesResolvedByContainer = null;
 
-    public function setContainer(ContainerInterface $container): self
+    public function __construct(?ContainerInterface $container = null)
     {
         $this->container = $container;
-
-        return $this;
-    }
-
-    public function setTypesResolvedByContainer(array $typesResolvedByContainer): self
-    {
-        $this->typesResolvedByContainer = $typesResolvedByContainer;
-
-        return $this;
-    }
-
-    protected function resolveThroughContainer(
-        object $object,
-        ReflectionClass $class,
-        ReflectionProperty $property,
-        ReflectionNamedType $type,
-    ): bool {
-        if ($this->container === null) {
-            return false;
-        }
-
-        $propertyType = $property->getType();
-        if (!$this->container->has($propertyType->getName())) {
-            return false;
-        }
-
-        if ($this->typesResolvedByContainer === null || in_array(
-            $propertyType->getName(),
-            $this->typesResolvedByContainer,
-            true
-        )) {
-            $property->setValue($object, $this->container->get($propertyType->getName()));
-
-            return true;
-        }
-
-        return false;
     }
 
     /**
@@ -163,12 +126,6 @@ class Hydrator implements HydratorInterface
             }
 
             if (!array_key_exists($key, $data)) {
-                if ($this->resolveThroughContainer($object, $class, $property, $propertyType)) {
-                    continue;
-                }
-            }
-
-            if (!array_key_exists($key, $data)) {
                 if (!$property->isInitialized($object)) {
                     throw new Exception\MissingRequiredValueException($property, sprintf(
                         'The %s.%s property is required.',
@@ -225,15 +182,16 @@ class Hydrator implements HydratorInterface
     /**
      * Initializes the given object.
      *
-     * @param class-string<T>|T $object
-     *
-     * @throws InvalidArgumentException
-     *                                  If the object cannot be initialized.
+     * @param  class-string<T>|T  $object
      *
      * @return T
      *
      *
      * @template T
+     * @throws ContainerExceptionInterface
+     *                                  If the object cannot be initialized.
+     *
+     * @throws InvalidArgumentException
      */
     private function initializeObject(string|object $object, array|object $data): object
     {
@@ -261,6 +219,11 @@ class Hydrator implements HydratorInterface
             }
 
             return $this->initializeObject($attribute->getConcreteClass($data), $data);
+        }
+
+        // if we have a container, get the instance through it
+        if ($this->container !== null) {
+            return $this->container->get($object);
         }
 
         $constructor = $reflectionClass->getConstructor();
