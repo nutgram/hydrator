@@ -24,6 +24,8 @@ use function is_int;
 use function is_object;
 use function is_string;
 use function is_subclass_of;
+use Psr\Container\ContainerExceptionInterface;
+use Psr\Container\ContainerInterface;
 use ReflectionAttribute;
 use ReflectionClass;
 use ReflectionEnum;
@@ -40,6 +42,13 @@ use function strtotime;
 
 class Hydrator implements HydratorInterface
 {
+    protected ?ContainerInterface $container = null;
+
+    public function __construct(?ContainerInterface $container = null)
+    {
+        $this->container = $container;
+    }
+
     /**
      * Hydrates the given object with the given data.
      *
@@ -175,8 +184,9 @@ class Hydrator implements HydratorInterface
      *
      * @param class-string<T>|T $object
      *
+     * @throws ContainerExceptionInterface
+     *                                     If the object cannot be initialized.
      * @throws InvalidArgumentException
-     *                                  If the object cannot be initialized.
      *
      * @return T
      *
@@ -209,6 +219,11 @@ class Hydrator implements HydratorInterface
             }
 
             return $this->initializeObject($attribute->getConcreteClass($data), $data);
+        }
+
+        // if we have a container, get the instance through it
+        if ($this->container !== null) {
+            return $this->container->get($object);
         }
 
         $constructor = $reflectionClass->getConstructor();

@@ -3,11 +3,15 @@
 namespace SergiX44\Hydrator\Tests;
 
 use InvalidArgumentException;
+use League\Container\Container;
+use League\Container\ReflectionContainer;
 use PHPUnit\Framework\TestCase;
 use SergiX44\Hydrator\Exception;
 use SergiX44\Hydrator\Exception\InvalidObjectException;
 use SergiX44\Hydrator\Hydrator;
 use SergiX44\Hydrator\HydratorInterface;
+use SergiX44\Hydrator\Tests\Fixtures\DI\Sun;
+use SergiX44\Hydrator\Tests\Fixtures\DI\Tree;
 use SergiX44\Hydrator\Tests\Fixtures\ObjectWithAbstract;
 use SergiX44\Hydrator\Tests\Fixtures\ObjectWithInvalidAbstract;
 use SergiX44\Hydrator\Tests\Fixtures\Store\Apple;
@@ -785,5 +789,36 @@ class HydratorTest extends TestCase
                 'name' => 'apple',
             ],
         ]);
+    }
+
+    public function testHydrateWithContainer(): void
+    {
+        $sun = new Sun('andromeda');
+
+        $container = new Container();
+        $container->delegate(new ReflectionContainer());
+        $container->addShared(Sun::class, $sun);
+
+        $hydrator = new Hydrator($container);
+
+        $o = $hydrator->hydrate(Tree::class, [
+            'name'   => 'foo',
+            'leaves' => [
+                'n' => 100,
+            ],
+            'wood' => [
+                'kg' => 120,
+            ],
+        ]);
+
+        $this->assertSame('foo', $o->name);
+        $this->assertSame(100, $o->leaves->n);
+        $this->assertSame(120, $o->wood->kg);
+        $this->assertNotNull($o->getSun());
+        $this->assertNotNull($o->leaves->getSun());
+        $this->assertNotNull($o->wood->getSun());
+        $this->assertSame($sun, $o->getSun());
+        $this->assertSame($sun, $o->leaves->getSun());
+        $this->assertSame($sun, $o->wood->getSun());
     }
 }
