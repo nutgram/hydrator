@@ -2,28 +2,11 @@
 
 namespace SergiX44\Hydrator;
 
-use function array_key_exists;
 use BackedEnum;
-use function class_exists;
-use function ctype_digit;
 use DateInterval;
 use DateTime;
 use DateTimeImmutable;
-use const FILTER_NULL_ON_FAILURE;
-use const FILTER_VALIDATE_BOOLEAN;
-use const FILTER_VALIDATE_FLOAT;
-use const FILTER_VALIDATE_INT;
-use function filter_var;
-use function get_object_vars;
-use function implode;
 use InvalidArgumentException;
-use function is_array;
-use function is_bool;
-use function is_float;
-use function is_int;
-use function is_object;
-use function is_string;
-use function is_subclass_of;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use ReflectionAttribute;
@@ -37,8 +20,25 @@ use SergiX44\Hydrator\Annotation\ArrayType;
 use SergiX44\Hydrator\Annotation\ConcreteResolver;
 use SergiX44\Hydrator\Annotation\UnionResolver;
 use SergiX44\Hydrator\Exception\InvalidObjectException;
+use function array_key_exists;
+use function class_exists;
+use function ctype_digit;
+use function filter_var;
+use function get_object_vars;
+use function implode;
+use function is_array;
+use function is_bool;
+use function is_float;
+use function is_int;
+use function is_object;
+use function is_string;
+use function is_subclass_of;
 use function sprintf;
 use function strtotime;
+use const FILTER_NULL_ON_FAILURE;
+use const FILTER_VALIDATE_BOOLEAN;
+use const FILTER_VALIDATE_FLOAT;
+use const FILTER_VALIDATE_INT;
 
 class Hydrator implements HydratorInterface
 {
@@ -93,7 +93,6 @@ class Hydrator implements HydratorInterface
                 continue;
             }
 
-            $property->setAccessible(true);
             $propertyType = $property->getType();
 
             if ($propertyType === null) {
@@ -344,7 +343,7 @@ class Hydrator implements HydratorInterface
             ));
         }
 
-        $property->setValue($object, null);
+        (fn() => $this->{$property->getName()} = null)->call($object);
     }
 
     /**
@@ -383,7 +382,7 @@ class Hydrator implements HydratorInterface
             }
         }
 
-        $property->setValue($object, $value);
+        (fn() => $this->{$property->getName()} = $value)->call($object);
     }
 
     /**
@@ -424,7 +423,7 @@ class Hydrator implements HydratorInterface
             }
         }
 
-        $property->setValue($object, $value);
+        (fn() => $this->{$property->getName()} = $value)->call($object);
     }
 
     /**
@@ -463,7 +462,7 @@ class Hydrator implements HydratorInterface
             }
         }
 
-        $property->setValue($object, $value);
+        (fn() => $this->{$property->getName()} = $value)->call($object);
     }
 
     /**
@@ -495,7 +494,7 @@ class Hydrator implements HydratorInterface
             ));
         }
 
-        $property->setValue($object, $value);
+        (fn() => $this->{$property->getName()} = $value)->call($object);
     }
 
     /**
@@ -536,7 +535,7 @@ class Hydrator implements HydratorInterface
             $value = $this->hydrateObjectsInArray($value, $arrayType, $arrayType->depth);
         }
 
-        $property->setValue($object, $value);
+        (fn() => $this->{$property->getName()} = $value)->call($object);
     }
 
     /**
@@ -590,7 +589,7 @@ class Hydrator implements HydratorInterface
             ));
         }
 
-        $property->setValue($object, $value);
+        (fn() => $this->{$property->getName()} = $value)->call($object);
     }
 
     /**
@@ -617,7 +616,7 @@ class Hydrator implements HydratorInterface
         /** @var class-string<DateTime|DateTimeImmutable> */
         $className = $type->getName();
 
-        $property->setValue($object, match (true) {
+        (fn($v) => $this->{$property->getName()} = $v)->call($object, match (true) {
             is_int($value) => (new $className())->setTimestamp($value),
 
             is_string($value) && ctype_digit($value) => (new $className())->setTimestamp((int) $value),
@@ -674,7 +673,7 @@ class Hydrator implements HydratorInterface
             ));
         }
 
-        $property->setValue($object, $dateInterval);
+        (fn() => $this->{$property->getName()} = $dateInterval)->call($object);
     }
 
     /**
@@ -736,7 +735,7 @@ class Hydrator implements HydratorInterface
             ));
         }
 
-        $property->setValue($object, $enum);
+        (fn() => $this->{$property->getName()} = $enum)->call($object);
     }
 
     /**
@@ -768,6 +767,6 @@ class Hydrator implements HydratorInterface
             ));
         }
 
-        $property->setValue($object, $this->hydrate($type->getName(), $value));
+        (fn($v) => $this->{$property->getName()} = $v)->call($object, $this->hydrate($type->getName(), $value));
     }
 }
