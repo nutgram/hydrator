@@ -11,7 +11,7 @@ use SergiX44\Hydrator\Tests\Fixtures\Store\AppleSauce;
 class AppleResolver extends ConcreteResolver
 {
     protected array $concretes = [
-        'jack' => AppleJack::class,
+        'jack'  => AppleJack::class,
         'sauce' => AppleSauce::class,
     ];
 
