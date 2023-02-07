@@ -14,6 +14,7 @@ use SergiX44\Hydrator\Tests\Fixtures\DI\Sun;
 use SergiX44\Hydrator\Tests\Fixtures\DI\Tree;
 use SergiX44\Hydrator\Tests\Fixtures\ObjectWithAbstract;
 use SergiX44\Hydrator\Tests\Fixtures\ObjectWithInvalidAbstract;
+use SergiX44\Hydrator\Tests\Fixtures\Resolver\AppleResolver;
 use SergiX44\Hydrator\Tests\Fixtures\Store\Apple;
 use SergiX44\Hydrator\Tests\Fixtures\Store\AppleJack;
 use SergiX44\Hydrator\Tests\Fixtures\Store\AppleSauce;
@@ -762,6 +763,14 @@ class HydratorTest extends TestCase
         $this->expectException(InvalidObjectException::class);
 
         (new Hydrator())->hydrate(Fruit::class, ['name' => 'apple']);
+    }
+
+    public function testItReturnsTheConcreteResolver(): void
+    {
+        $resolver = (new Hydrator())->getConcreteResolverFor(Apple::class);
+
+        $this->assertInstanceOf(AppleResolver::class, $resolver);
+        $this->assertSame([AppleJack::class, AppleSauce::class], $resolver->getConcretes());
     }
 
     public function testHydrateAbstractProperty(): void

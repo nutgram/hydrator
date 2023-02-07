@@ -12,10 +12,20 @@ use Attribute;
 #[Attribute(Attribute::TARGET_CLASS)]
 abstract class ConcreteResolver
 {
+    protected array $concretes = [];
+
     /**
      * @param array $data
      *
-     * @return string
+     * @return string|null
      */
-    abstract public function getConcreteClass(array $data): string;
+    abstract public function concreteFor(array $data): ?string;
+
+    /**
+     * @return array
+     */
+    public function getConcretes(): array
+    {
+        return array_values($this->concretes);
+    }
 }

@@ -55,8 +55,6 @@ class Hydrator implements HydratorInterface
      * @param class-string<T>|T $object
      * @param array|object      $data
      *
-     * @throws InvalidArgumentException
-     *                                                    If the data isn't valid.
      * @throws Exception\UntypedPropertyException
      *                                                    If one of the object properties isn't typed.
      * @throws Exception\UnsupportedPropertyTypeException
@@ -67,6 +65,8 @@ class Hydrator implements HydratorInterface
      *                                                    If the given data contains an invalid value.
      * @throws Exception\HydrationException
      *                                                    If the object cannot be hydrated.
+     * @throws InvalidArgumentException
+     *                                                    If the data isn't valid.
      *
      * @return T
      *
@@ -150,10 +150,10 @@ class Hydrator implements HydratorInterface
      * @param string            $json
      * @param ?int              $flags
      *
-     * @throws InvalidArgumentException
-     *                                      If the JSON cannot be decoded.
      * @throws Exception\HydrationException
      *                                      If the object cannot be hydrated.
+     * @throws InvalidArgumentException
+     *                                      If the JSON cannot be decoded.
      *
      * @return T
      *
@@ -180,13 +180,25 @@ class Hydrator implements HydratorInterface
     }
 
     /**
+     * @param class-string|object $object
+     *
+     * @throws \ReflectionException
+     *
+     * @return object|null
+     */
+    public function getConcreteResolverFor(string|object $object): ?ConcreteResolver
+    {
+        return $this->getAttributeInstance(new ReflectionClass($object), ConcreteResolver::class, ReflectionAttribute::IS_INSTANCEOF);
+    }
+
+    /**
      * Initializes the given object.
      *
      * @param class-string<T>|T $object
      *
+     * @throws InvalidArgumentException
      * @throws ContainerExceptionInterface
      *                                     If the object cannot be initialized.
-     * @throws InvalidArgumentException
      *
      * @return T
      *
@@ -218,7 +230,7 @@ class Hydrator implements HydratorInterface
                 ));
             }
 
-            return $this->initializeObject($attribute->getConcreteClass($data), $data);
+            return $this->initializeObject($attribute->concreteFor($data), $data);
         }
 
         // if we have a container, get the instance through it
@@ -268,10 +280,10 @@ class Hydrator implements HydratorInterface
      * @param ReflectionNamedType $type
      * @param mixed               $value
      *
-     * @throws Exception\UnsupportedPropertyTypeException
-     *                                                    If the given property contains an unsupported type.
      * @throws Exception\InvalidValueException
      *                                                    If the given value isn't valid.
+     * @throws Exception\UnsupportedPropertyTypeException
+     *                                                    If the given property contains an unsupported type.
      *
      * @return void
      */
