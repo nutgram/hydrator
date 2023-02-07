@@ -14,6 +14,7 @@ use SergiX44\Hydrator\Tests\Fixtures\DI\Sun;
 use SergiX44\Hydrator\Tests\Fixtures\DI\Tree;
 use SergiX44\Hydrator\Tests\Fixtures\ObjectWithAbstract;
 use SergiX44\Hydrator\Tests\Fixtures\ObjectWithInvalidAbstract;
+use SergiX44\Hydrator\Tests\Fixtures\Resolver\AppleResolver;
 use SergiX44\Hydrator\Tests\Fixtures\Store\Apple;
 use SergiX44\Hydrator\Tests\Fixtures\Store\AppleJack;
 use SergiX44\Hydrator\Tests\Fixtures\Store\AppleSauce;
@@ -100,7 +101,7 @@ class HydratorTest extends TestCase
 
         $o = (new Hydrator())->hydrate(Fixtures\ObjectWithUnionAndAttribute::class, [
             'tag' => [
-                'name'  => 'foo',
+                'name' => 'foo',
                 'price' => 1.00,
             ],
         ]);
@@ -747,9 +748,9 @@ class HydratorTest extends TestCase
     public function testHydrateAbstractObject(): void
     {
         $o = (new Hydrator())->hydrate(Apple::class, [
-            'type'      => 'sauce',
+            'type' => 'sauce',
             'sweetness' => 100,
-            'category'  => null,
+            'category' => null,
         ]);
 
         $this->assertInstanceOf(AppleSauce::class, $o);
@@ -764,13 +765,21 @@ class HydratorTest extends TestCase
         (new Hydrator())->hydrate(Fruit::class, ['name' => 'apple']);
     }
 
+    public function testItReturnsTheConcreteResolver(): void
+    {
+        $resolver = (new Hydrator())->getConcreteResolverFor(Apple::class);
+
+        $this->assertInstanceOf(AppleResolver::class, $resolver);
+        $this->assertSame([AppleJack::class, AppleSauce::class], $resolver->getConcretes());
+    }
+
     public function testHydrateAbstractProperty(): void
     {
         $o = (new Hydrator())->hydrate(new ObjectWithAbstract(), [
             'value' => [
-                'type'      => 'jack',
+                'type' => 'jack',
                 'sweetness' => null,
-                'category'  => 'brandy',
+                'category' => 'brandy',
             ],
         ]);
 
@@ -802,7 +811,7 @@ class HydratorTest extends TestCase
         $hydrator = new Hydrator($container);
 
         $o = $hydrator->hydrate(Tree::class, [
-            'name'   => 'foo',
+            'name' => 'foo',
             'leaves' => [
                 'n' => 100,
             ],

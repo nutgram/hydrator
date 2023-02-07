@@ -10,12 +10,13 @@ use SergiX44\Hydrator\Tests\Fixtures\Store\AppleSauce;
 #[Attribute(Attribute::TARGET_CLASS)]
 class AppleResolver extends ConcreteResolver
 {
-    public function getConcreteClass(array $data): string
+    protected array $concretes = [
+        'jack' => AppleJack::class,
+        'sauce' => AppleSauce::class,
+    ];
+
+    public function concreteFor(array $data): ?string
     {
-        return match ($data['type']) {
-            'jack'  => AppleJack::class,
-            'sauce' => AppleSauce::class,
-            default => throw new Exception('Invalid apple type'),
-        };
+        return $this->concretes[$data['type']] ?? null;
     }
 }
