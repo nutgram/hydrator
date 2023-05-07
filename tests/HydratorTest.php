@@ -10,8 +10,11 @@ use SergiX44\Hydrator\Exception;
 use SergiX44\Hydrator\Exception\InvalidObjectException;
 use SergiX44\Hydrator\Hydrator;
 use SergiX44\Hydrator\HydratorInterface;
+use SergiX44\Hydrator\Tests\Fixtures\DI\Forest;
+use SergiX44\Hydrator\Tests\Fixtures\DI\Leaves;
 use SergiX44\Hydrator\Tests\Fixtures\DI\Sun;
 use SergiX44\Hydrator\Tests\Fixtures\DI\Tree;
+use SergiX44\Hydrator\Tests\Fixtures\DI\Wood;
 use SergiX44\Hydrator\Tests\Fixtures\ObjectWithAbstract;
 use SergiX44\Hydrator\Tests\Fixtures\ObjectWithInvalidAbstract;
 use SergiX44\Hydrator\Tests\Fixtures\Resolver\AppleResolver;
@@ -829,5 +832,66 @@ class HydratorTest extends TestCase
         $this->assertSame($sun, $o->getSun());
         $this->assertSame($sun, $o->leaves->getSun());
         $this->assertSame($sun, $o->wood->getSun());
+    }
+
+    public function testHydrateWithContainerWithNestedInstances(): void
+    {
+        $sun = new Sun('andromeda');
+
+        $container = new Container();
+        $container->delegate(new ReflectionContainer());
+        $container->addShared(Sun::class, $sun);
+
+        $hydrator = new Hydrator($container);
+
+        $o = $hydrator->hydrate(Forest::class, [
+            'trees' => [
+                [
+                    'name' => 'foo',
+                    'leaves' => [
+                        'n' => 100,
+                    ],
+                    'wood' => [
+                        'kg' => 120,
+                    ],
+                ],
+                [
+                    'name' => 'foo2',
+                    'leaves' => [
+                        'n' => 200,
+                    ],
+                    'wood' => [
+                        'kg' => 220,
+                    ],
+                ]
+            ]
+        ]);
+
+        $this->assertIsArray($o->trees);
+        $this->assertcount(2, $o->trees);
+
+        $this->assertSame('foo', $o->trees[0]->name);
+        $this->assertInstanceOf(Leaves::class, $o->trees[0]->leaves);
+        $this->assertSame(100, $o->trees[0]->leaves->n);
+        $this->assertInstanceOf(Sun::class, $o->trees[0]->leaves->getSun());
+        $this->assertSame('andromeda', $o->trees[0]->leaves->getSun()->getFrom());
+        $this->assertInstanceOf(Wood::class, $o->trees[0]->wood);
+        $this->assertSame(120, $o->trees[0]->wood->kg);
+        $this->assertInstanceOf(Sun::class, $o->trees[0]->wood->getSun());
+        $this->assertSame('andromeda', $o->trees[0]->wood->getSun()->getFrom());
+        $this->assertInstanceOf(Sun::class, $o->trees[0]->getSun());
+        $this->assertSame('andromeda', $o->trees[0]->getSun()->getFrom());
+
+        $this->assertSame('foo2', $o->trees[1]->name);
+        $this->assertInstanceOf(Leaves::class, $o->trees[1]->leaves);
+        $this->assertSame(200, $o->trees[1]->leaves->n);
+        $this->assertInstanceOf(Sun::class, $o->trees[1]->leaves->getSun());
+        $this->assertSame('andromeda', $o->trees[1]->leaves->getSun()->getFrom());
+        $this->assertInstanceOf(Wood::class, $o->trees[1]->wood);
+        $this->assertSame(220, $o->trees[1]->wood->kg);
+        $this->assertInstanceOf(Sun::class, $o->trees[1]->wood->getSun());
+        $this->assertSame('andromeda', $o->trees[1]->wood->getSun()->getFrom());
+        $this->assertInstanceOf(Sun::class, $o->trees[1]->getSun());
+        $this->assertSame('andromeda', $o->trees[1]->getSun()->getFrom());
     }
 }
