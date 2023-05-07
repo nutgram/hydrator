@@ -12,6 +12,7 @@ use Attribute;
  * @NamedArgumentConstructor
  *
  * @Attributes({
+ *
  *   @Attribute("value", type="string", required=true),
  * })
  */

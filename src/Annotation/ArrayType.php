@@ -13,6 +13,7 @@ use ReflectionClass;
  * @NamedArgumentConstructor
  *
  * @Attributes({
+ *
  *   @Attribute("class", type="class-string", required=true),
  * })
  */

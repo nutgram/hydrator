@@ -847,7 +847,7 @@ class HydratorTest extends TestCase
         $o = $hydrator->hydrate(Forest::class, [
             'trees' => [
                 [
-                    'name' => 'foo',
+                    'name'   => 'foo',
                     'leaves' => [
                         'n' => 100,
                     ],
@@ -856,15 +856,15 @@ class HydratorTest extends TestCase
                     ],
                 ],
                 [
-                    'name' => 'foo2',
+                    'name'   => 'foo2',
                     'leaves' => [
                         'n' => 200,
                     ],
                     'wood' => [
                         'kg' => 220,
                     ],
-                ]
-            ]
+                ],
+            ],
         ]);
 
         $this->assertIsArray($o->trees);

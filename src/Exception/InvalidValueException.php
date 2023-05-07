@@ -3,8 +3,9 @@
 namespace SergiX44\Hydrator\Exception;
 
 use ReflectionProperty;
-use function sprintf;
 use Throwable;
+
+use function sprintf;
 
 class InvalidValueException extends HydrationException
 {
