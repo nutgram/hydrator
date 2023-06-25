@@ -906,7 +906,7 @@ class HydratorTest extends TestCase
 
         $object = (new Hydrator($container))->hydrate(Fixtures\ObjectWithEnumInConstructor::class, [
             'stringableEnum' => 'c1200a7e-136e-4a11-9bc3-cc937046e90f',
-            'numerableEnums' => [1]
+            'numerableEnums' => [1],
         ]);
 
         $this->assertSame(Fixtures\StringableEnum::foo, $object->stringableEnum);
