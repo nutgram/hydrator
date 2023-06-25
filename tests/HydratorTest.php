@@ -894,4 +894,22 @@ class HydratorTest extends TestCase
         $this->assertInstanceOf(Sun::class, $o->trees[1]->getSun());
         $this->assertSame('andromeda', $o->trees[1]->getSun()->getFrom());
     }
+
+    public function testDisableDependencyInjection(): void
+    {
+        if (\PHP_VERSION_ID < 80100) {
+            $this->markTestSkipped('php >= 8.1 is required.');
+        }
+
+        $container = new Container();
+        $container->delegate(new ReflectionContainer());
+
+        $object = (new Hydrator($container))->hydrate(Fixtures\ObjectWithEnumInConstructor::class, [
+            'stringableEnum' => 'c1200a7e-136e-4a11-9bc3-cc937046e90f',
+            'numerableEnums' => [1]
+        ]);
+
+        $this->assertSame(Fixtures\StringableEnum::foo, $object->stringableEnum);
+        $this->assertSame(Fixtures\NumerableEnum::foo, $object->numerableEnums[0]);
+    }
 }

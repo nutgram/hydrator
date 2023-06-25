@@ -18,9 +18,9 @@ use ReflectionUnionType;
 use SergiX44\Hydrator\Annotation\Alias;
 use SergiX44\Hydrator\Annotation\ArrayType;
 use SergiX44\Hydrator\Annotation\ConcreteResolver;
+use SergiX44\Hydrator\Annotation\DisableDependencyInjection;
 use SergiX44\Hydrator\Annotation\UnionResolver;
 use SergiX44\Hydrator\Exception\InvalidObjectException;
-
 use function array_key_exists;
 use function class_exists;
 use function ctype_digit;
@@ -36,7 +36,6 @@ use function is_string;
 use function is_subclass_of;
 use function sprintf;
 use function strtotime;
-
 use const FILTER_NULL_ON_FAILURE;
 use const FILTER_VALIDATE_BOOLEAN;
 use const FILTER_VALIDATE_FLOAT;
@@ -227,7 +226,8 @@ class Hydrator implements HydratorInterface
         }
 
         // if we have a container, get the instance through it
-        if ($this->container !== null) {
+        $resolveViaContainer = $this->getAttributeInstance($reflectionClass, DisableDependencyInjection::class);
+        if ($resolveViaContainer === null && $this->container !== null) {
             return $this->container->get($object);
         }
 
@@ -562,8 +562,11 @@ class Hydrator implements HydratorInterface
         }
 
         return array_map(function ($object) use ($arrayType) {
-            $newInstance = $this->container?->get($arrayType->class) ?? $arrayType->getInstance();
+            if (is_subclass_of($arrayType->class, BackedEnum::class)) {
+                return $arrayType->class::tryFrom($object);
+            }
 
+            $newInstance = $this->initializeObject($arrayType->class, []);
             return $this->hydrate($newInstance, $object);
         }, $array);
     }
