@@ -564,7 +564,7 @@ class Hydrator implements HydratorInterface
 
         return array_map(function ($object) use ($arrayType) {
             try {
-                $newInstance = $this->container?->get($arrayType->class);
+                $newInstance = $this->container?->get($arrayType->class) ?? $arrayType->getInstance();
             } catch (Throwable) {
                 $newInstance = $arrayType->getInstance();
             }
