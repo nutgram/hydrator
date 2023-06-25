@@ -894,4 +894,18 @@ class HydratorTest extends TestCase
         $this->assertInstanceOf(Sun::class, $o->trees[1]->getSun());
         $this->assertSame('andromeda', $o->trees[1]->getSun()->getFrom());
     }
+
+    /**
+     * @dataProvider stringableEnumValueProvider
+     */
+    public function testHydrateStringableEnumPropertyInConstructor($value, $expected): void
+    {
+        if (\PHP_VERSION_ID < 80100) {
+            $this->markTestSkipped('php >= 8.1 is required.');
+        }
+
+        $object = (new Hydrator())->hydrate(Fixtures\ObjectWithEnumInConstructor::class, ['value' => $value]);
+
+        $this->assertSame($expected, $object->value);
+    }
 }
