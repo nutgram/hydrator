@@ -18,6 +18,7 @@ use ReflectionUnionType;
 use SergiX44\Hydrator\Annotation\Alias;
 use SergiX44\Hydrator\Annotation\ArrayType;
 use SergiX44\Hydrator\Annotation\ConcreteResolver;
+use SergiX44\Hydrator\Annotation\SkipConstructor;
 use SergiX44\Hydrator\Annotation\UnionResolver;
 use SergiX44\Hydrator\Exception\InvalidObjectException;
 
@@ -57,8 +58,6 @@ class Hydrator implements HydratorInterface
      * @param class-string<T>|T $object
      * @param array|object      $data
      *
-     * @throws Exception\UntypedPropertyException
-     *                                                    If one of the object properties isn't typed.
      * @throws Exception\UnsupportedPropertyTypeException
      *                                                    If one of the object properties contains an unsupported type.
      * @throws Exception\MissingRequiredValueException
@@ -69,6 +68,8 @@ class Hydrator implements HydratorInterface
      *                                                    If the object cannot be hydrated.
      * @throws InvalidArgumentException
      *                                                    If the data isn't valid.
+     * @throws Exception\UntypedPropertyException
+     *                                                    If one of the object properties isn't typed.
      *
      * @return T
      *
@@ -109,7 +110,11 @@ class Hydrator implements HydratorInterface
             }
 
             if ($propertyType instanceof ReflectionUnionType) {
-                $resolver = $this->getAttributeInstance($property, UnionResolver::class, ReflectionAttribute::IS_INSTANCEOF);
+                $resolver = $this->getAttributeInstance(
+                    $property,
+                    UnionResolver::class,
+                    ReflectionAttribute::IS_INSTANCEOF
+                );
                 if (isset($resolver)) {
                     $propertyType = $resolver->resolve($propertyType, $data[$key]);
                 } else {
@@ -146,10 +151,10 @@ class Hydrator implements HydratorInterface
      * @param string            $json
      * @param ?int              $flags
      *
-     * @throws Exception\HydrationException
-     *                                      If the object cannot be hydrated.
      * @throws InvalidArgumentException
      *                                      If the JSON cannot be decoded.
+     * @throws Exception\HydrationException
+     *                                      If the object cannot be hydrated.
      *
      * @return T
      *
@@ -182,7 +187,11 @@ class Hydrator implements HydratorInterface
      */
     public function getConcreteResolverFor(string|object $object): ?ConcreteResolver
     {
-        return $this->getAttributeInstance(new ReflectionClass($object), ConcreteResolver::class, ReflectionAttribute::IS_INSTANCEOF);
+        return $this->getAttributeInstance(
+            new ReflectionClass($object),
+            ConcreteResolver::class,
+            ReflectionAttribute::IS_INSTANCEOF
+        );
     }
 
     /**
@@ -190,9 +199,9 @@ class Hydrator implements HydratorInterface
      *
      * @param class-string<T>|T $object
      *
-     * @throws InvalidArgumentException
      * @throws ContainerExceptionInterface
      *                                     If the object cannot be initialized.
+     * @throws InvalidArgumentException
      *
      * @return T
      *
@@ -214,7 +223,11 @@ class Hydrator implements HydratorInterface
         $reflectionClass = new ReflectionClass($object);
 
         if ($reflectionClass->isAbstract()) {
-            $attribute = $this->getAttributeInstance($reflectionClass, ConcreteResolver::class, ReflectionAttribute::IS_INSTANCEOF);
+            $attribute = $this->getAttributeInstance(
+                $reflectionClass,
+                ConcreteResolver::class,
+                ReflectionAttribute::IS_INSTANCEOF
+            );
 
             if ($attribute === null) {
                 throw new InvalidObjectException(sprintf(
@@ -227,6 +240,11 @@ class Hydrator implements HydratorInterface
         }
 
         // if we have a container, get the instance through it
+        $skipConstructor = $this->getAttributeInstance($reflectionClass, SkipConstructor::class);
+        if ($skipConstructor !== null) {
+            return $reflectionClass->newInstanceWithoutConstructor();
+        }
+
         if ($this->container !== null) {
             return $this->container->get($object);
         }
@@ -254,8 +272,11 @@ class Hydrator implements HydratorInterface
      *
      * @return T|null
      */
-    private function getAttributeInstance(ReflectionProperty|ReflectionClass $target, string $class, int $criteria = 0): mixed
-    {
+    private function getAttributeInstance(
+        ReflectionProperty|ReflectionClass $target,
+        string $class,
+        int $criteria = 0
+    ): mixed {
         $attributes = $target->getAttributes($class, $criteria);
         if (isset($attributes[0])) {
             return $attributes[0]->newInstance();
@@ -273,10 +294,10 @@ class Hydrator implements HydratorInterface
      * @param ReflectionNamedType $type
      * @param mixed               $value
      *
-     * @throws Exception\InvalidValueException
-     *                                                    If the given value isn't valid.
      * @throws Exception\UnsupportedPropertyTypeException
      *                                                    If the given property contains an unsupported type.
+     * @throws Exception\InvalidValueException
+     *                                                    If the given value isn't valid.
      *
      * @return void
      */
@@ -291,7 +312,12 @@ class Hydrator implements HydratorInterface
 
         match (true) {
             // an empty string for a non-string type is always processes as null
-            '' === $value && 'string' !== $propertyType, null === $value => $this->propertyNull($object, $class, $property, $type),
+            '' === $value && 'string' !== $propertyType, null === $value => $this->propertyNull(
+                $object,
+                $class,
+                $property,
+                $type
+            ),
 
             'bool' === $propertyType => $this->propertyBool($object, $class, $property, $type, $value),
 
@@ -305,11 +331,26 @@ class Hydrator implements HydratorInterface
 
             'object' === $propertyType => $this->propertyObject($object, $class, $property, $type, $value),
 
-            DateTime::class === $propertyType, DateTimeImmutable::class === $propertyType => $this->propertyDateTime($object, $class, $property, $type, $value),
+            DateTime::class === $propertyType, DateTimeImmutable::class === $propertyType => $this->propertyDateTime(
+                $object,
+                $class,
+                $property,
+                $type,
+                $value
+            ),
 
-            DateInterval::class === $propertyType => $this->propertyDateInterval($object, $class, $property, $type, $value),
+            DateInterval::class === $propertyType => $this->propertyDateInterval(
+                $object,
+                $class,
+                $property,
+                $type,
+                $value
+            ),
 
-            PHP_VERSION_ID >= 80100 && is_subclass_of($propertyType, BackedEnum::class) => $this->propertyBackedEnum($object, $class, $property, $type, $value),
+            PHP_VERSION_ID >= 80100 && is_subclass_of(
+                $propertyType,
+                BackedEnum::class
+            ) => $this->propertyBackedEnum($object, $class, $property, $type, $value),
 
             class_exists($propertyType) => $this->propertyFromInstance($object, $class, $property, $type, $value),
 
@@ -562,7 +603,11 @@ class Hydrator implements HydratorInterface
         }
 
         return array_map(function ($object) use ($arrayType) {
-            $newInstance = $this->container?->get($arrayType->class) ?? $arrayType->getInstance();
+            if (is_subclass_of($arrayType->class, BackedEnum::class)) {
+                return $arrayType->class::tryFrom($object);
+            }
+
+            $newInstance = $this->initializeObject($arrayType->class, []);
 
             return $this->hydrate($newInstance, $object);
         }, $array);
