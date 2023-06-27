@@ -852,7 +852,18 @@ class HydratorTest extends TestCase
         $this->assertSame('andromeda', $o->trees[1]->getSun()->getFrom());
     }
 
-    public function testDisableDependencyInjection(): void
+    public function testSkipConstructor(): void
+    {
+        $object = (new Hydrator())->hydrate(Fixtures\ObjectWithEnumInConstructor::class, [
+            'stringableEnum' => 'c1200a7e-136e-4a11-9bc3-cc937046e90f',
+            'numerableEnums' => [1],
+        ]);
+
+        $this->assertSame(Fixtures\StringableEnum::foo, $object->stringableEnum);
+        $this->assertSame(Fixtures\NumerableEnum::foo, $object->numerableEnums[0]);
+    }
+
+    public function testSkipConstructorWithContainer(): void
     {
         $container = new Container();
 

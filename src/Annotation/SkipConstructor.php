@@ -10,6 +10,6 @@ use Attribute;
  * @Target({"CLASS"})
  */
 #[Attribute(Attribute::TARGET_CLASS)]
-final class DisableDependencyInjection
+final class SkipConstructor
 {
 }
