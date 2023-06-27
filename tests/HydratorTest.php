@@ -2,9 +2,8 @@
 
 namespace SergiX44\Hydrator\Tests;
 
+use Illuminate\Container\Container;
 use InvalidArgumentException;
-use League\Container\Container;
-use League\Container\ReflectionContainer;
 use PHPUnit\Framework\TestCase;
 use SergiX44\Hydrator\Exception;
 use SergiX44\Hydrator\Exception\InvalidObjectException;
@@ -768,8 +767,7 @@ class HydratorTest extends TestCase
         $sun = new Sun('andromeda');
 
         $container = new Container();
-        $container->delegate(new ReflectionContainer());
-        $container->addShared(Sun::class, $sun);
+        $container->instance(Sun::class, $sun);
 
         $hydrator = new Hydrator($container);
 
@@ -799,8 +797,7 @@ class HydratorTest extends TestCase
         $sun = new Sun('andromeda');
 
         $container = new Container();
-        $container->delegate(new ReflectionContainer());
-        $container->addShared(Sun::class, $sun);
+        $container->instance(Sun::class, $sun);
 
         $hydrator = new Hydrator($container);
 
@@ -858,7 +855,6 @@ class HydratorTest extends TestCase
     public function testDisableDependencyInjection(): void
     {
         $container = new Container();
-        $container->delegate(new ReflectionContainer());
 
         $object = (new Hydrator($container))->hydrate(Fixtures\ObjectWithEnumInConstructor::class, [
             'stringableEnum' => 'c1200a7e-136e-4a11-9bc3-cc937046e90f',
