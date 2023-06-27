@@ -493,10 +493,6 @@ class HydratorTest extends TestCase
      */
     public function testHydrateStringableEnumProperty($value, $expected): void
     {
-        if (\PHP_VERSION_ID < 80100) {
-            $this->markTestSkipped('php >= 8.1 is required.');
-        }
-
         $object = (new Hydrator())->hydrate(Fixtures\ObjectWithStringableEnum::class, ['value' => $value]);
 
         $this->assertSame($expected, $object->value);
@@ -504,10 +500,6 @@ class HydratorTest extends TestCase
 
     public function stringableEnumValueProvider(): array
     {
-        if (\PHP_VERSION_ID < 80100) {
-            return [];
-        }
-
         return [
             ['c1200a7e-136e-4a11-9bc3-cc937046e90f', Fixtures\StringableEnum::foo],
             ['a2b29b37-1c5a-4b36-9981-097ddd25c740', Fixtures\StringableEnum::bar],
@@ -517,10 +509,6 @@ class HydratorTest extends TestCase
 
     public function testHydrateStringableEnumPropertyWithInvalidValue(): void
     {
-        if (\PHP_VERSION_ID < 80100) {
-            $this->markTestSkipped('php >= 8.1 is required.');
-        }
-
         $this->expectException(Exception\InvalidValueException::class);
         $this->expectExceptionMessage('The ObjectWithStringableEnum.value property '.
             'expects the following type: string.');
@@ -530,10 +518,6 @@ class HydratorTest extends TestCase
 
     public function testHydrateStringableEnumPropertyWithInvalidUnknownCase(): void
     {
-        if (\PHP_VERSION_ID < 80100) {
-            $this->markTestSkipped('php >= 8.1 is required.');
-        }
-
         $this->expectException(Exception\InvalidValueException::class);
         $this->expectExceptionMessage('The ObjectWithStringableEnum.value property '.
             'expects one of the following values: '.
@@ -547,10 +531,6 @@ class HydratorTest extends TestCase
      */
     public function testHydrateNumerableEnumProperty($value, $expected): void
     {
-        if (\PHP_VERSION_ID < 80100) {
-            $this->markTestSkipped('php >= 8.1 is required.');
-        }
-
         $object = (new Hydrator())->hydrate(Fixtures\ObjectWithNumerableEnum::class, ['value' => $value]);
 
         $this->assertSame($expected, $object->value);
@@ -558,10 +538,6 @@ class HydratorTest extends TestCase
 
     public function numerableEnumValueProvider(): array
     {
-        if (\PHP_VERSION_ID < 80100) {
-            return [];
-        }
-
         return [
             [1, Fixtures\NumerableEnum::foo],
             [2, Fixtures\NumerableEnum::bar],
@@ -576,10 +552,6 @@ class HydratorTest extends TestCase
 
     public function testHydrateNumerableEnumPropertyWithInvalidValue(): void
     {
-        if (\PHP_VERSION_ID < 80100) {
-            $this->markTestSkipped('php >= 8.1 is required.');
-        }
-
         $this->expectException(Exception\InvalidValueException::class);
         $this->expectExceptionMessage('The ObjectWithNumerableEnum.value property '.
             'expects the following type: int.');
@@ -589,10 +561,6 @@ class HydratorTest extends TestCase
 
     public function testHydrateNumerableEnumPropertyWithInvalidUnknownCase(): void
     {
-        if (\PHP_VERSION_ID < 80100) {
-            $this->markTestSkipped('php >= 8.1 is required.');
-        }
-
         $this->expectException(Exception\InvalidValueException::class);
         $this->expectExceptionMessage('The ObjectWithNumerableEnum.value property '.
             'expects one of the following values: '.
@@ -684,10 +652,6 @@ class HydratorTest extends TestCase
 
     public function testHydrateProductWithJsonAsArray(): void
     {
-        if (\PHP_VERSION_ID < 80100) {
-            $this->markTestSkipped('php >= 8.1 is required.');
-        }
-
         $json = <<<'JSON'
         {
             "name": "ac7ce13e-9b2e-4b09-ae7a-973769ea43df",
@@ -717,10 +681,6 @@ class HydratorTest extends TestCase
 
     public function testHydrateProductWithJsonAsObject(): void
     {
-        if (\PHP_VERSION_ID < 80100) {
-            $this->markTestSkipped('php >= 8.1 is required.');
-        }
-
         $json = <<<'JSON'
         {
             "name": "0f61ac0e-f732-4088-8082-cc396e7dcb80",
@@ -897,10 +857,6 @@ class HydratorTest extends TestCase
 
     public function testDisableDependencyInjection(): void
     {
-        if (\PHP_VERSION_ID < 80100) {
-            $this->markTestSkipped('php >= 8.1 is required.');
-        }
-
         $container = new Container();
         $container->delegate(new ReflectionContainer());
 
