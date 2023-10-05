@@ -29,10 +29,6 @@ final class Mutate
     public function __construct(string ...$mutators)
     {
         foreach ($mutators as $mutator) {
-            if (!class_exists($mutator)) {
-                throw new InvalidArgumentException(sprintf('Class %s does not exist', $mutator));
-            }
-
             if (!is_subclass_of($mutator, Mutator::class)) {
                 throw new InvalidArgumentException(sprintf('Class %s must implements %s', $mutator, Mutator::class));
             }
