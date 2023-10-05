@@ -14,7 +14,6 @@ use SergiX44\Hydrator\Mutator;
 #[Attribute(Attribute::TARGET_PROPERTY)]
 final class Mutate
 {
-
     /**
      * The attribute value.
      *
@@ -25,7 +24,7 @@ final class Mutate
     /**
      * Constructor of the class.
      *
-     * @param  string  ...$mutators
+     * @param string ...$mutators
      */
     public function __construct(string ...$mutators)
     {
@@ -44,13 +43,15 @@ final class Mutate
 
     /**
      * @param $value
+     *
      * @return mixed
      */
     public function apply($value): mixed
     {
         foreach ($this->mutators as $mutator) {
-            $value = (new $mutator)->mutate($value);
+            $value = (new $mutator())->mutate($value);
         }
+
         return $value;
     }
 }
