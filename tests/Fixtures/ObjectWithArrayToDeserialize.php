@@ -7,7 +7,6 @@ use SergiX44\Hydrator\Mutations\JsonDecodeObject;
 
 final class ObjectWithArrayToDeserialize
 {
-
     public string $name;
 
     #[Mutate(JsonDecodeObject::class)]
