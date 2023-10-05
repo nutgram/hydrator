@@ -875,4 +875,16 @@ class HydratorTest extends TestCase
         $this->assertSame(Fixtures\StringableEnum::foo, $object->stringableEnum);
         $this->assertSame(Fixtures\NumerableEnum::foo, $object->numerableEnums[0]);
     }
+
+    public function testMutateProperty(): void
+    {
+        $object = (new Hydrator())->hydrate(Fixtures\ObjectWithArrayToDeserialize::class, [
+            'name'  => 'foo',
+            'value' => json_encode(['foo' => 'bar'], JSON_THROW_ON_ERROR),
+        ]);
+
+        $this->assertSame('foo', $object->name);
+        $this->assertIsArray($object->value);
+        $this->assertSame(['foo' => 'bar'], $object->value);
+    }
 }

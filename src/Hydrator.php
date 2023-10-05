@@ -18,6 +18,7 @@ use ReflectionUnionType;
 use SergiX44\Hydrator\Annotation\Alias;
 use SergiX44\Hydrator\Annotation\ArrayType;
 use SergiX44\Hydrator\Annotation\ConcreteResolver;
+use SergiX44\Hydrator\Annotation\Mutate;
 use SergiX44\Hydrator\Annotation\SkipConstructor;
 use SergiX44\Hydrator\Annotation\UnionResolver;
 use SergiX44\Hydrator\Exception\InvalidObjectException;
@@ -136,6 +137,11 @@ class Hydrator implements HydratorInterface
                 }
 
                 continue;
+            }
+
+            $mutator = $this->getAttributeInstance($property, Mutate::class);
+            if ($mutator !== null) {
+                $data[$key] = $mutator->apply($data[$key]);
             }
 
             $this->hydrateProperty($object, $class, $property, $propertyType, $data[$key]);
