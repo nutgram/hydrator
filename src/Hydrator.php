@@ -22,7 +22,6 @@ use SergiX44\Hydrator\Annotation\Mutate;
 use SergiX44\Hydrator\Annotation\SkipConstructor;
 use SergiX44\Hydrator\Annotation\UnionResolver;
 use SergiX44\Hydrator\Exception\InvalidObjectException;
-
 use function array_key_exists;
 use function class_exists;
 use function ctype_digit;
@@ -38,7 +37,6 @@ use function is_string;
 use function is_subclass_of;
 use function sprintf;
 use function strtotime;
-
 use const FILTER_NULL_ON_FAILURE;
 use const FILTER_VALIDATE_BOOLEAN;
 use const FILTER_VALIDATE_FLOAT;
@@ -90,8 +88,6 @@ class Hydrator implements HydratorInterface
             if ($property->isStatic()) {
                 continue;
             }
-
-            $property->setAccessible(true);
             $propertyType = $property->getType();
 
             if ($propertyType === null) {
@@ -240,6 +236,10 @@ class Hydrator implements HydratorInterface
                     'The %s class cannot be instantiated. Please define a concrete resolver attribute.',
                     $object
                 ));
+            }
+
+            if (is_object($data)) {
+                $data = get_object_vars($data);
             }
 
             return $this->initializeObject($attribute->concreteFor($data), $data);
@@ -613,7 +613,7 @@ class Hydrator implements HydratorInterface
                 return $arrayType->class::tryFrom($object);
             }
 
-            $newInstance = $this->initializeObject($arrayType->class, []);
+            $newInstance = $this->initializeObject($arrayType->class, $object);
 
             return $this->hydrate($newInstance, $object);
         }, $array);
