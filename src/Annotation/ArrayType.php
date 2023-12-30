@@ -7,9 +7,7 @@ use ReflectionClass;
 
 /**
  * @Annotation
- *
  * @Target({"PROPERTY"})
- *
  * @NamedArgumentConstructor
  *
  * @Attributes({

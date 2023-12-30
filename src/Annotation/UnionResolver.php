@@ -8,7 +8,6 @@ use ReflectionUnionType;
 
 /**
  * @Annotation
- *
  * @Target({"PROPERTY"})
  */
 #[Attribute(Attribute::TARGET_PROPERTY)]

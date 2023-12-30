@@ -8,7 +8,6 @@ use SergiX44\Hydrator\Mutator;
 
 /**
  * @Annotation
- *
  * @Target({"PROPERTY"})
  */
 #[Attribute(Attribute::TARGET_PROPERTY)]
