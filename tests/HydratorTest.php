@@ -775,7 +775,7 @@ class HydratorTest extends TestCase
     public function testHydrateArrayAbstractPropertyWithObject(): void
     {
         $o = (new Hydrator())->hydrate(new ObjectWithArrayOfAbstracts(), [
-            'value' => [(object)[
+            'value' => [(object) [
                 'type'      => 'jack',
                 'sweetness' => null,
                 'category'  => 'brandy',
