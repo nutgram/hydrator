@@ -15,6 +15,7 @@ use SergiX44\Hydrator\Tests\Fixtures\DI\Sun;
 use SergiX44\Hydrator\Tests\Fixtures\DI\Tree;
 use SergiX44\Hydrator\Tests\Fixtures\DI\Wood;
 use SergiX44\Hydrator\Tests\Fixtures\ObjectWithAbstract;
+use SergiX44\Hydrator\Tests\Fixtures\ObjectWithArrayOfAbstracts;
 use SergiX44\Hydrator\Tests\Fixtures\ObjectWithInvalidAbstract;
 use SergiX44\Hydrator\Tests\Fixtures\Resolver\AppleResolver;
 use SergiX44\Hydrator\Tests\Fixtures\Store\Apple;
@@ -749,6 +750,46 @@ class HydratorTest extends TestCase
         $this->assertInstanceOf(AppleJack::class, $o->value);
         $this->assertSame('jack', $o->value->type);
         $this->assertSame('brandy', $o->value->category);
+    }
+
+    public function testHydrateArrayAbstractProperty(): void
+    {
+        $o = (new Hydrator())->hydrate(new ObjectWithArrayOfAbstracts(), [
+            'value' => [[
+                'type'      => 'jack',
+                'sweetness' => null,
+                'category'  => 'brandy',
+            ]],
+        ]);
+
+        $this->assertInstanceOf(ObjectWithArrayOfAbstracts::class, $o);
+        $this->assertIsArray($o->value);
+
+        $value = $o->value[0];
+
+        $this->assertInstanceOf(AppleJack::class, $value);
+        $this->assertSame('jack', $value->type);
+        $this->assertSame('brandy', $value->category);
+    }
+
+    public function testHydrateArrayAbstractPropertyWithObject(): void
+    {
+        $o = (new Hydrator())->hydrate(new ObjectWithArrayOfAbstracts(), [
+            'value' => [(object) [
+                'type'      => 'jack',
+                'sweetness' => null,
+                'category'  => 'brandy',
+            ]],
+        ]);
+
+        $this->assertInstanceOf(ObjectWithArrayOfAbstracts::class, $o);
+        $this->assertIsArray($o->value);
+
+        $value = $o->value[0];
+
+        $this->assertInstanceOf(AppleJack::class, $value);
+        $this->assertSame('jack', $value->type);
+        $this->assertSame('brandy', $value->category);
     }
 
     public function testHydrateInvalidAbstractObject(): void

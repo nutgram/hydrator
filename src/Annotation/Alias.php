@@ -6,9 +6,7 @@ use Attribute;
 
 /**
  * @Annotation
- *
  * @Target({"PROPERTY"})
- *
  * @NamedArgumentConstructor
  *
  * @Attributes({

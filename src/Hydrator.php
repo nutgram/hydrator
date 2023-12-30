@@ -90,8 +90,6 @@ class Hydrator implements HydratorInterface
             if ($property->isStatic()) {
                 continue;
             }
-
-            $property->setAccessible(true);
             $propertyType = $property->getType();
 
             if ($propertyType === null) {
@@ -240,6 +238,10 @@ class Hydrator implements HydratorInterface
                     'The %s class cannot be instantiated. Please define a concrete resolver attribute.',
                     $object
                 ));
+            }
+
+            if (is_object($data)) {
+                $data = get_object_vars($data);
             }
 
             return $this->initializeObject($attribute->concreteFor($data), $data);
@@ -613,7 +615,7 @@ class Hydrator implements HydratorInterface
                 return $arrayType->class::tryFrom($object);
             }
 
-            $newInstance = $this->initializeObject($arrayType->class, []);
+            $newInstance = $this->initializeObject($arrayType->class, $object);
 
             return $this->hydrate($newInstance, $object);
         }, $array);
