@@ -488,6 +488,65 @@ class HydratorTest extends TestCase
         (new Hydrator())->hydrate(Fixtures\ObjectWithDateInterval::class, ['value' => 'foo']);
     }
 
+    public function testHydrateArrayOfStringableEnumProperty(): void
+    {
+        $object = (new Hydrator())->hydrate(Fixtures\ObjectWithArrayOfStringableEnum::class, ['value' => [
+            'c1200a7e-136e-4a11-9bc3-cc937046e90f',
+            'a2b29b37-1c5a-4b36-9981-097ddd25c740',
+            'c1ea3762-9827-4c0c-808b-53be3febae6d',
+        ]]);
+
+        $this->assertSame([
+            Fixtures\StringableEnum::foo,
+            Fixtures\StringableEnum::bar,
+            Fixtures\StringableEnum::baz,
+        ], $object->value);
+    }
+
+    public function testHydrateArrayOfStringableEnumPropertyWithoutMatchingEnum(): void
+    {
+        $object = (new Hydrator())->hydrate(Fixtures\ObjectWithArrayOfStringableEnum::class, ['value' => [
+            'c1200a7e-136e-4a11-9bc3-cc937046e90f',
+            'a2b29b37-1c5a-4b36-9981-097ddd25c740',
+            'c1ea3762-9827-4c0c-808b-53be3febae6d',
+            'bbb'
+        ]]);
+
+        $this->assertSame([
+            Fixtures\StringableEnum::foo,
+            Fixtures\StringableEnum::bar,
+            Fixtures\StringableEnum::baz,
+            'bbb'
+        ], $object->value);
+    }
+
+    public function testHydrateStringableEnumUnionPropertyString(): void
+    {
+        $object = (new Hydrator())->hydrate(Fixtures\ObjectWithStringableEnumUnion::class, ['value' => 'bbb']);
+
+        $this->assertSame('bbb', $object->value);
+    }
+
+    public function testHydrateStringableEnumUnionPropertyInt(): void
+    {
+        $object = (new Hydrator())->hydrate(Fixtures\ObjectWithStringableEnumUnion::class, ['value' => 123]);
+
+        $this->assertSame(123, $object->value);
+    }
+
+    public function testHydrateStringableEnumUnionPropertyFloat(): void
+    {
+        $object = (new Hydrator())->hydrate(Fixtures\ObjectWithStringableEnumUnion::class, ['value' => .23]);
+
+        $this->assertSame(.23, $object->value);
+    }
+
+    public function testHydrateStringableEnumUnionPropertyBool(): void
+    {
+        $this->expectException(Exception\UnsupportedPropertyTypeException::class);
+        (new Hydrator())->hydrate(Fixtures\ObjectWithStringableEnumUnion::class, ['value' => false]);
+    }
+
     /**
      * @dataProvider stringableEnumValueProvider
      */
