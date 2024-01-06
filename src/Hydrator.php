@@ -22,6 +22,7 @@ use SergiX44\Hydrator\Annotation\Mutate;
 use SergiX44\Hydrator\Annotation\SkipConstructor;
 use SergiX44\Hydrator\Annotation\UnionResolver;
 use SergiX44\Hydrator\Exception\InvalidObjectException;
+
 use function array_key_exists;
 use function class_exists;
 use function ctype_digit;
@@ -37,6 +38,7 @@ use function is_string;
 use function is_subclass_of;
 use function sprintf;
 use function strtotime;
+
 use const FILTER_NULL_ON_FAILURE;
 use const FILTER_VALIDATE_BOOLEAN;
 use const FILTER_VALIDATE_FLOAT;
@@ -592,12 +594,13 @@ class Hydrator implements HydratorInterface
     }
 
     /**
-     * @param  array  $array
-     * @param  string  $class
-     * @param  int  $depth
+     * @param array  $array
+     * @param string $class
+     * @param int    $depth
+     *
+     * @throws \ReflectionException
      *
      * @return array
-     * @throws \ReflectionException
      */
     private function hydrateObjectsInArray(array $array, string $class, int $depth): array
     {
