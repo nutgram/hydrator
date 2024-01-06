@@ -115,7 +115,7 @@ class Hydrator implements HydratorInterface
                     ReflectionAttribute::IS_INSTANCEOF
                 );
                 if (isset($resolver)) {
-                    $propertyType = $resolver->resolve($propertyType, $data[$key]);
+                    $propertyType = $resolver->resolve($propertyType, is_array($data[$key]) ? $data[$key] : $data);
                 } else {
                     throw new Exception\UnsupportedPropertyTypeException(sprintf(
                         'The %s.%s property cannot be hydrated automatically. Please define an union type resolver attribute or remove the union type.',
@@ -587,37 +587,35 @@ class Hydrator implements HydratorInterface
 
         $arrayType = $this->getAttributeInstance($property, ArrayType::class);
         if ($arrayType !== null) {
-            $value = $this->hydrateObjectsInArray($value, $arrayType, $arrayType->depth);
+            $value = $this->hydrateObjectsInArray($value, $arrayType->class, $arrayType->depth);
         }
 
         $property->setValue($object, $value);
     }
 
     /**
-     * @param array     $array
-     * @param ArrayType $arrayType
-     * @param int       $depth
+     * @param array  $array
+     * @param string $class
+     * @param int    $depth
      *
      * @throws \ReflectionException
      *
      * @return array
      */
-    private function hydrateObjectsInArray(array $array, ArrayType $arrayType, int $depth): array
+    private function hydrateObjectsInArray(array $array, string $class, int $depth): array
     {
         if ($depth > 1) {
-            return array_map(function ($child) use ($arrayType, $depth) {
-                return $this->hydrateObjectsInArray($child, $arrayType, --$depth);
+            return array_map(function ($child) use ($class, $depth) {
+                return $this->hydrateObjectsInArray($child, $class, --$depth);
             }, $array);
         }
 
-        return array_map(function ($object) use ($arrayType) {
-            if (is_subclass_of($arrayType->class, BackedEnum::class)) {
-                return $arrayType->class::tryFrom($object);
+        return array_map(function ($object) use ($class) {
+            if (is_subclass_of($class, BackedEnum::class)) {
+                return $class::tryFrom($object) ?? $object;
             }
 
-            $newInstance = $this->initializeObject($arrayType->class, $object);
-
-            return $this->hydrate($newInstance, $object);
+            return $this->hydrate($class, $object);
         }, $array);
     }
 
