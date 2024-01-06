@@ -509,14 +509,14 @@ class HydratorTest extends TestCase
             'c1200a7e-136e-4a11-9bc3-cc937046e90f',
             'a2b29b37-1c5a-4b36-9981-097ddd25c740',
             'c1ea3762-9827-4c0c-808b-53be3febae6d',
-            'bbb'
+            'bbb',
         ]]);
 
         $this->assertSame([
             Fixtures\StringableEnum::foo,
             Fixtures\StringableEnum::bar,
             Fixtures\StringableEnum::baz,
-            'bbb'
+            'bbb',
         ], $object->value);
     }
 
