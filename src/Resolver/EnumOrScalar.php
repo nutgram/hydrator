@@ -50,7 +50,8 @@ class EnumOrScalar extends UnionResolver
 
         throw new UnsupportedPropertyTypeException(
             sprintf(
-                'This property can be %s or %s, %s given.',
+                'The property "%s" can only be %s or %s, %s given.',
+                $propertyName,
                 $enumClass,
                 implode(' or ', $propertyTypes),
                 $valueType
