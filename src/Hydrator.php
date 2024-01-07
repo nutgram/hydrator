@@ -22,7 +22,6 @@ use SergiX44\Hydrator\Annotation\Mutate;
 use SergiX44\Hydrator\Annotation\SkipConstructor;
 use SergiX44\Hydrator\Annotation\UnionResolver;
 use SergiX44\Hydrator\Exception\InvalidObjectException;
-
 use function array_key_exists;
 use function class_exists;
 use function ctype_digit;
@@ -38,7 +37,6 @@ use function is_string;
 use function is_subclass_of;
 use function sprintf;
 use function strtotime;
-
 use const FILTER_NULL_ON_FAILURE;
 use const FILTER_VALIDATE_BOOLEAN;
 use const FILTER_VALIDATE_FLOAT;
@@ -143,6 +141,14 @@ class Hydrator implements HydratorInterface
             }
 
             $this->hydrateProperty($object, $class, $property, $propertyType, $data[$key]);
+            unset($data[$key]);
+        }
+
+        // if the object has a __set method, we will use it to hydrate the remaining data
+        if (!empty($data) && $class->hasMethod('__set')) {
+            foreach ($data as $key => $value) {
+                $object->$key = $value;
+            }
         }
 
         return $object;
