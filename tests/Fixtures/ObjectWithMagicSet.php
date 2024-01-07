@@ -4,7 +4,6 @@ namespace SergiX44\Hydrator\Tests\Fixtures;
 
 class ObjectWithMagicSet
 {
-
     public string $value = 'default';
 
     protected array $additional = [];
