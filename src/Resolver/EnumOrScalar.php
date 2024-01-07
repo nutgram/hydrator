@@ -5,19 +5,16 @@ namespace SergiX44\Hydrator\Resolver;
 use Attribute;
 use BackedEnum;
 use ReflectionType;
-use ReflectionUnionType;
 use SergiX44\Hydrator\Annotation\UnionResolver;
 use SergiX44\Hydrator\Exception\UnsupportedPropertyTypeException;
 
 #[Attribute(Attribute::TARGET_PROPERTY)]
 class EnumOrScalar extends UnionResolver
 {
-    public function resolve(ReflectionUnionType $type, array $data): ReflectionType
+    public function resolve(string $propertyName, array $propertyTypes, array $data): ReflectionType
     {
-        $types = $type->getTypes();
-        $enum = array_shift($types);
-
-        if (empty($types)) {
+        $enum = array_shift($propertyTypes);
+        if (empty($propertyTypes)) {
             return $enum;
         }
 
@@ -32,7 +29,7 @@ class EnumOrScalar extends UnionResolver
             );
         }
 
-        $value = array_shift($data);
+        $value = $data[$propertyName] ?? array_shift($data);
         if ((is_string($value) || is_int($value)) && $enumClass::tryFrom($value) !== null) {
             return $enum;
         }
@@ -45,7 +42,7 @@ class EnumOrScalar extends UnionResolver
             default   => $valueType,
         };
 
-        foreach ($types as $t) {
+        foreach ($propertyTypes as $t) {
             if ($t->getName() === $valueType) {
                 return $t;
             }
@@ -53,9 +50,10 @@ class EnumOrScalar extends UnionResolver
 
         throw new UnsupportedPropertyTypeException(
             sprintf(
-                'This property can be %s or %s, %s given.',
+                'The property "%s" can only be %s or %s, %s given.',
+                $propertyName,
                 $enumClass,
-                implode(' or ', $types),
+                implode(' or ', $propertyTypes),
                 $valueType
             )
         );

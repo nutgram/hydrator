@@ -3,8 +3,9 @@
 namespace SergiX44\Hydrator\Annotation;
 
 use Attribute;
+use ReflectionException;
+use ReflectionNamedType;
 use ReflectionType;
-use ReflectionUnionType;
 
 /**
  * @Annotation
@@ -14,12 +15,13 @@ use ReflectionUnionType;
 abstract class UnionResolver
 {
     /**
-     * @param ReflectionUnionType $type
-     * @param array               $data
+     * @param string                $propertyName
+     * @param ReflectionNamedType[] $propertyTypes
+     * @param array                 $data
      *
-     * @throws \ReflectionException
+     * @throws ReflectionException
      *
      * @return ReflectionType
      */
-    abstract public function resolve(ReflectionUnionType $type, array $data): ReflectionType;
+    abstract public function resolve(string $propertyName, array $propertyTypes, array $data): ReflectionType;
 }

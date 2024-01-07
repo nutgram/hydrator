@@ -1,8 +1,6 @@
 <?php
 
-namespace SergiX44\Hydrator\Mutations;
-
-use SergiX44\Hydrator\Mutator;
+namespace SergiX44\Hydrator\Mutation;
 
 class JsonDecodeArray implements Mutator
 {
