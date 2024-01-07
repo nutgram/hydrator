@@ -991,9 +991,9 @@ class HydratorTest extends TestCase
     public function testHydrateAdditionalWithMagicMethod()
     {
         $object = (new Hydrator())->hydrate(Fixtures\ObjectWithMagicSet::class, [
-            'name'  => 'foo',
-            'value' => 'bar',
-            'type' => false,
+            'name'   => 'foo',
+            'value'  => 'bar',
+            'type'   => false,
             'number' => 42,
         ]);
 
