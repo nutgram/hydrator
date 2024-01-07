@@ -143,6 +143,14 @@ class Hydrator implements HydratorInterface
             }
 
             $this->hydrateProperty($object, $class, $property, $propertyType, $data[$key]);
+            unset($data[$key]);
+        }
+
+        // if the object has a __set method, we will use it to hydrate the remaining data
+        if (!empty($data) && $class->hasMethod('__set')) {
+            foreach ($data as $key => $value) {
+                $object->$key = $value;
+            }
         }
 
         return $object;
@@ -355,7 +363,7 @@ class Hydrator implements HydratorInterface
                 $value
             ),
 
-            PHP_VERSION_ID >= 80100 && is_subclass_of(
+            is_subclass_of(
                 $propertyType,
                 BackedEnum::class
             ) => $this->propertyBackedEnum($object, $class, $property, $type, $value),

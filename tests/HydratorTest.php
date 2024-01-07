@@ -987,4 +987,19 @@ class HydratorTest extends TestCase
         $this->assertIsArray($object->value);
         $this->assertSame(['foo' => 'bar'], $object->value);
     }
+
+    public function testHydrateAdditionalWithMagicMethod()
+    {
+        $object = (new Hydrator())->hydrate(Fixtures\ObjectWithMagicSet::class, [
+            'name'   => 'foo',
+            'value'  => 'bar',
+            'type'   => false,
+            'number' => 42,
+        ]);
+
+        $this->assertSame('foo', $object->name);
+        $this->assertSame('bar', $object->value);
+        $this->assertFalse($object->type);
+        $this->assertSame(42, $object->number);
+    }
 }
