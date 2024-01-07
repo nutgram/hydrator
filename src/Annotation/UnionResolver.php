@@ -15,12 +15,13 @@ use ReflectionType;
 abstract class UnionResolver
 {
     /**
-     * @param  string  $propertyName
-     * @param  ReflectionNamedType[]  $propertyTypes
-     * @param  array  $data
+     * @param string                $propertyName
+     * @param ReflectionNamedType[] $propertyTypes
+     * @param array                 $data
+     *
+     * @throws ReflectionException
      *
      * @return ReflectionType
-     * @throws ReflectionException
      */
     abstract public function resolve(string $propertyName, array $propertyTypes, array $data): ReflectionType;
 }
