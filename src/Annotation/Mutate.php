@@ -4,7 +4,7 @@ namespace SergiX44\Hydrator\Annotation;
 
 use Attribute;
 use InvalidArgumentException;
-use SergiX44\Hydrator\Mutator;
+use SergiX44\Hydrator\Mutation\Mutator;
 
 /**
  * @Annotation

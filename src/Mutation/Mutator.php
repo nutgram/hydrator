@@ -1,6 +1,6 @@
 <?php
 
-namespace SergiX44\Hydrator;
+namespace SergiX44\Hydrator\Mutation;
 
 interface Mutator
 {
