@@ -82,6 +82,10 @@ class Hydrator implements HydratorInterface
             $data = get_object_vars($data);
         }
 
+        $data['is_animated'] = false;
+        $data['is_video'] = false;
+
+
         $object = $this->initializeObject($object, $data);
 
         $class = new ReflectionClass($object);
