@@ -541,6 +541,20 @@ class HydratorTest extends TestCase
         $this->assertSame(.23, $object->value);
     }
 
+    public function testHydrateStringableEnumUnionPropertyNull(): void
+    {
+        $object = (new Hydrator())->hydrate(Fixtures\ObjectWithStringableEnumNullableUnion::class, ['value' => null]);
+
+        $this->assertNull($object->value);
+    }
+
+    public function testHydrateStringableEnumUnionPropertyNullNonSet(): void
+    {
+        $object = (new Hydrator())->hydrate(Fixtures\ObjectWithStringableEnumNullableUnion::class, []);
+
+        $this->assertNull($object->value);
+    }
+
     public function testHydrateStringableEnumUnionPropertyBool(): void
     {
         $this->expectException(Exception\UnsupportedPropertyTypeException::class);

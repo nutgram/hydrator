@@ -22,7 +22,6 @@ use SergiX44\Hydrator\Annotation\Mutate;
 use SergiX44\Hydrator\Annotation\SkipConstructor;
 use SergiX44\Hydrator\Annotation\UnionResolver;
 use SergiX44\Hydrator\Exception\InvalidObjectException;
-
 use function array_key_exists;
 use function class_exists;
 use function ctype_digit;
@@ -38,7 +37,6 @@ use function is_string;
 use function is_subclass_of;
 use function sprintf;
 use function strtotime;
-
 use const FILTER_NULL_ON_FAILURE;
 use const FILTER_VALIDATE_BOOLEAN;
 use const FILTER_VALIDATE_FLOAT;
@@ -118,7 +116,7 @@ class Hydrator implements HydratorInterface
                     $propertyType = $resolver->resolve(
                         $key,
                         $propertyType->getTypes(),
-                        is_array($data[$key]) ? $data[$key] : $data
+                        isset($data[$key]) && is_array($data[$key]) ? $data[$key] : $data
                     );
                 } else {
                     throw new Exception\UnsupportedPropertyTypeException(sprintf(
