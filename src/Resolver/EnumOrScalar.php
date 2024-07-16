@@ -39,6 +39,7 @@ class EnumOrScalar extends UnionResolver
             'integer' => 'int',
             'double'  => 'float',
             'boolean' => 'bool',
+            'NULL'    => 'null',
             default   => $valueType,
         };
 

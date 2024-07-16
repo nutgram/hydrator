@@ -118,7 +118,7 @@ class Hydrator implements HydratorInterface
                     $propertyType = $resolver->resolve(
                         $key,
                         $propertyType->getTypes(),
-                        is_array($data[$key]) ? $data[$key] : $data
+                        isset($data[$key]) && is_array($data[$key]) ? $data[$key] : $data
                     );
                 } else {
                     throw new Exception\UnsupportedPropertyTypeException(sprintf(
