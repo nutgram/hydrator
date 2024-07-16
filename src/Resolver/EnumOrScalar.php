@@ -37,10 +37,10 @@ class EnumOrScalar extends UnionResolver
         $valueType = gettype($value);
         $valueType = match ($valueType) {
             'integer' => 'int',
-            'double' => 'float',
+            'double'  => 'float',
             'boolean' => 'bool',
-            'NULL' => 'null',
-            default => $valueType,
+            'NULL'    => 'null',
+            default   => $valueType,
         };
 
         foreach ($propertyTypes as $t) {
