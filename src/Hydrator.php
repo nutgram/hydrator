@@ -74,7 +74,7 @@ class Hydrator implements HydratorInterface
      *
      * @return T
      *
-     * @template T
+     * @template T of object
      */
     public function hydrate(string|object $object, array|object $data): object
     {
@@ -174,7 +174,7 @@ class Hydrator implements HydratorInterface
      *
      * @return T
      *
-     * @template T
+     * @template T of object
      */
     public function hydrateWithJson(string|object $object, string $json, ?int $flags = null): object
     {
