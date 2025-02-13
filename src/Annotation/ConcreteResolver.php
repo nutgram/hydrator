@@ -15,8 +15,9 @@ abstract class ConcreteResolver
     protected array $concretes = [];
 
     /**
-     * @param array $data
+     * @param array           $data
      * @param ReflectionClass $class
+     *
      * @return string|null
      */
     abstract public function concreteFor(array $data, ReflectionClass $class): ?string;

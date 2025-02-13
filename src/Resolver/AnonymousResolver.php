@@ -16,6 +16,7 @@ class AnonymousResolver extends ConcreteResolver
         }
 
         $className = $class->getName();
+
         return (eval("return new class extends \\$className {
             private array \$attributes = [];
 

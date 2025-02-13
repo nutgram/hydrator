@@ -1026,7 +1026,6 @@ class HydratorTest extends TestCase
             ],
         ]);
 
-
         $this->assertInstanceOf(RottenApple::class, $object->value);
         $this->assertSame('jack', $object->value->type);
     }
