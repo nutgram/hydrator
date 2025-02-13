@@ -22,6 +22,7 @@ use SergiX44\Hydrator\Annotation\Mutate;
 use SergiX44\Hydrator\Annotation\SkipConstructor;
 use SergiX44\Hydrator\Annotation\UnionResolver;
 use SergiX44\Hydrator\Exception\InvalidObjectException;
+
 use function array_key_exists;
 use function class_exists;
 use function ctype_digit;
@@ -37,6 +38,7 @@ use function is_string;
 use function is_subclass_of;
 use function sprintf;
 use function strtotime;
+
 use const FILTER_NULL_ON_FAILURE;
 use const FILTER_VALIDATE_BOOLEAN;
 use const FILTER_VALIDATE_FLOAT;
@@ -849,6 +851,7 @@ class Hydrator implements HydratorInterface
 
     /**
      * @param mixed $value
+     *
      * @return string
      */
     private function extractType(mixed $value): string
@@ -856,12 +859,12 @@ class Hydrator implements HydratorInterface
         return match (gettype($value)) {
             'boolean' => 'bool',
             'integer' => 'int',
-            'double' => 'float',
-            'string' => 'string',
-            'array' => 'array',
-            'object' => 'object',
-            'NULL' => 'null',
-            default => 'mixed'
+            'double'  => 'float',
+            'string'  => 'string',
+            'array'   => 'array',
+            'object'  => 'object',
+            'NULL'    => 'null',
+            default   => 'mixed'
         };
     }
 }
