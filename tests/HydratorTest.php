@@ -22,6 +22,7 @@ use SergiX44\Hydrator\Tests\Fixtures\Store\Apple;
 use SergiX44\Hydrator\Tests\Fixtures\Store\AppleJack;
 use SergiX44\Hydrator\Tests\Fixtures\Store\AppleSauce;
 use SergiX44\Hydrator\Tests\Fixtures\Store\Fruit;
+use SergiX44\Hydrator\Tests\Fixtures\Store\RottenApple;
 use SergiX44\Hydrator\Tests\Fixtures\Store\Tag;
 use SergiX44\Hydrator\Tests\Fixtures\Store\TagPrice;
 use TypeError;
@@ -1015,5 +1016,18 @@ class HydratorTest extends TestCase
         $this->assertSame('bar', $object->value);
         $this->assertFalse($object->type);
         $this->assertSame(42, $object->number);
+    }
+
+    public function testHydrateWithAnonymousResolver()
+    {
+        $object = (new Hydrator())->hydrate(Fixtures\ObjectWithUnresolvedAbstract::class, [
+            'value' => [
+                'type' => 'jack',
+            ],
+        ]);
+
+
+        $this->assertInstanceOf(RottenApple::class, $object->value);
+        $this->assertSame('jack', $object->value->type);
     }
 }

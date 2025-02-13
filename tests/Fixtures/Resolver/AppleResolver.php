@@ -3,6 +3,7 @@
 namespace SergiX44\Hydrator\Tests\Fixtures\Resolver;
 
 use Attribute;
+use ReflectionClass;
 use SergiX44\Hydrator\Annotation\ConcreteResolver;
 use SergiX44\Hydrator\Tests\Fixtures\Store\AppleJack;
 use SergiX44\Hydrator\Tests\Fixtures\Store\AppleSauce;
@@ -15,7 +16,7 @@ class AppleResolver extends ConcreteResolver
         'sauce' => AppleSauce::class,
     ];
 
-    public function concreteFor(array $data): ?string
+    public function concreteFor(array $data, ReflectionClass $class): ?string
     {
         return $this->concretes[$data['type']] ?? null;
     }

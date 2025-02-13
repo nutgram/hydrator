@@ -22,7 +22,6 @@ use SergiX44\Hydrator\Annotation\Mutate;
 use SergiX44\Hydrator\Annotation\SkipConstructor;
 use SergiX44\Hydrator\Annotation\UnionResolver;
 use SergiX44\Hydrator\Exception\InvalidObjectException;
-
 use function array_key_exists;
 use function class_exists;
 use function ctype_digit;
@@ -38,7 +37,6 @@ use function is_string;
 use function is_subclass_of;
 use function sprintf;
 use function strtotime;
-
 use const FILTER_NULL_ON_FAILURE;
 use const FILTER_VALIDATE_BOOLEAN;
 use const FILTER_VALIDATE_FLOAT;
@@ -120,6 +118,14 @@ class Hydrator implements HydratorInterface
                         $propertyType->getTypes(),
                         isset($data[$key]) && is_array($data[$key]) ? $data[$key] : $data
                     );
+                } elseif (array_key_exists($key, $data) && is_scalar($data[$key])) {
+                    $inputType = $this->extractType($data[$key]);
+                    foreach ($propertyType->getTypes() as $type) {
+                        if ($type->getName() === $inputType) {
+                            $propertyType = $type;
+                            break;
+                        }
+                    }
                 } else {
                     throw new Exception\UnsupportedPropertyTypeException(sprintf(
                         'The %s.%s property cannot be hydrated automatically. Please define an union type resolver attribute or remove the union type.',
@@ -256,7 +262,7 @@ class Hydrator implements HydratorInterface
                 $data = get_object_vars($data);
             }
 
-            return $this->initializeObject($attribute->concreteFor($data), $data);
+            return $this->initializeObject($attribute->concreteFor($data, $reflectionClass), $data);
         }
 
         // if we have a container, get the instance through it
@@ -839,5 +845,23 @@ class Hydrator implements HydratorInterface
         }
 
         $property->setValue($object, $this->hydrate($type->getName(), $value));
+    }
+
+    /**
+     * @param mixed $value
+     * @return string
+     */
+    private function extractType(mixed $value): string
+    {
+        return match (gettype($value)) {
+            'boolean' => 'bool',
+            'integer' => 'int',
+            'double' => 'float',
+            'string' => 'string',
+            'array' => 'array',
+            'object' => 'object',
+            'NULL' => 'null',
+            default => 'mixed'
+        };
     }
 }

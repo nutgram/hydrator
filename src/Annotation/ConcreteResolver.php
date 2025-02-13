@@ -3,6 +3,7 @@
 namespace SergiX44\Hydrator\Annotation;
 
 use Attribute;
+use ReflectionClass;
 
 /**
  * @Annotation
@@ -15,10 +16,10 @@ abstract class ConcreteResolver
 
     /**
      * @param array $data
-     *
+     * @param ReflectionClass $class
      * @return string|null
      */
-    abstract public function concreteFor(array $data): ?string;
+    abstract public function concreteFor(array $data, ReflectionClass $class): ?string;
 
     /**
      * @return array
