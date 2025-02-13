@@ -7,7 +7,7 @@ use ReflectionClass;
 use SergiX44\Hydrator\Annotation\ConcreteResolver;
 
 #[Attribute(Attribute::TARGET_CLASS)]
-class AnonymousResolver extends ConcreteResolver
+class ResolveToAnonymous extends ConcreteResolver
 {
     public function concreteFor(array $data, ReflectionClass $class): ?string
     {

@@ -2,9 +2,9 @@
 
 namespace SergiX44\Hydrator\Tests\Fixtures\Store;
 
-use SergiX44\Hydrator\Resolver\AnonymousResolver;
+use SergiX44\Hydrator\Resolver\ResolveToAnonymous;
 
-#[AnonymousResolver]
+#[ResolveToAnonymous]
 abstract class RottenApple
 {
     public string $type;
