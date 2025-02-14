@@ -1029,4 +1029,13 @@ class HydratorTest extends TestCase
         $this->assertInstanceOf(RottenApple::class, $object->value);
         $this->assertSame('jack', $object->value->type);
     }
+
+    public function testHydrateWithAnonymousResolverNull()
+    {
+        $object = (new Hydrator())->hydrate(Fixtures\ObjectWithDefaultTypeResolver::class, [
+            'value' => 'phpisdead',
+        ]);
+
+        $this->assertSame('phpisdead', $object->value);
+    }
 }
