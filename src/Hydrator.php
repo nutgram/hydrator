@@ -19,10 +19,10 @@ use SergiX44\Hydrator\Annotation\Alias;
 use SergiX44\Hydrator\Annotation\ArrayType;
 use SergiX44\Hydrator\Annotation\ConcreteResolver;
 use SergiX44\Hydrator\Annotation\Mutate;
+use SergiX44\Hydrator\Annotation\OverrideConstructor;
 use SergiX44\Hydrator\Annotation\SkipConstructor;
 use SergiX44\Hydrator\Annotation\UnionResolver;
 use SergiX44\Hydrator\Exception\InvalidObjectException;
-
 use function array_key_exists;
 use function class_exists;
 use function ctype_digit;
@@ -38,7 +38,6 @@ use function is_string;
 use function is_subclass_of;
 use function sprintf;
 use function strtotime;
-
 use const FILTER_NULL_ON_FAILURE;
 use const FILTER_VALIDATE_BOOLEAN;
 use const FILTER_VALIDATE_FLOAT;
@@ -266,6 +265,14 @@ class Hydrator implements HydratorInterface
         }
 
         if ($this->container !== null) {
+            $overrideConstructor = $this->getAttributeInstance($reflectionClass, OverrideConstructor::class);
+            if ($overrideConstructor !== null) {
+                $obj = $reflectionClass->newInstanceWithoutConstructor();
+                $args = $overrideConstructor->getArguments($obj, $this->container);
+                call_user_func([$obj, $overrideConstructor->method], ...$args);
+                return $obj;
+            }
+
             return $this->container->get($object);
         }
 
