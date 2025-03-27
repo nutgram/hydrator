@@ -106,7 +106,7 @@ class HydratorTest extends TestCase
 
         $o = (new Hydrator())->hydrate(Fixtures\ObjectWithUnionAndAttribute::class, [
             'tag' => [
-                'name' => 'foo',
+                'name'  => 'foo',
                 'price' => 1.00,
             ],
         ]);
@@ -790,9 +790,9 @@ class HydratorTest extends TestCase
     public function testHydrateAbstractObject(): void
     {
         $o = (new Hydrator())->hydrate(Apple::class, [
-            'type' => 'sauce',
+            'type'      => 'sauce',
             'sweetness' => 100,
-            'category' => null,
+            'category'  => null,
         ]);
 
         $this->assertInstanceOf(AppleSauce::class, $o);
@@ -819,9 +819,9 @@ class HydratorTest extends TestCase
     {
         $o = (new Hydrator())->hydrate(new ObjectWithAbstract(), [
             'value' => [
-                'type' => 'jack',
+                'type'      => 'jack',
                 'sweetness' => null,
-                'category' => 'brandy',
+                'category'  => 'brandy',
             ],
         ]);
 
@@ -836,9 +836,9 @@ class HydratorTest extends TestCase
         $o = (new Hydrator())->hydrate(new ObjectWithArrayOfAbstracts(), [
             'value' => [
                 [
-                    'type' => 'jack',
+                    'type'      => 'jack',
                     'sweetness' => null,
-                    'category' => 'brandy',
+                    'category'  => 'brandy',
                 ],
             ],
         ]);
@@ -858,9 +858,9 @@ class HydratorTest extends TestCase
         $o = (new Hydrator())->hydrate(new ObjectWithArrayOfAbstracts(), [
             'value' => [
                 (object) [
-                    'type' => 'jack',
+                    'type'      => 'jack',
                     'sweetness' => null,
-                    'category' => 'brandy',
+                    'category'  => 'brandy',
                 ],
             ],
         ]);
@@ -896,7 +896,7 @@ class HydratorTest extends TestCase
         $hydrator = new Hydrator($container);
 
         $o = $hydrator->hydrate(Tree::class, [
-            'name' => 'foo',
+            'name'   => 'foo',
             'leaves' => [
                 'n' => 100,
             ],
@@ -928,7 +928,7 @@ class HydratorTest extends TestCase
         $o = $hydrator->hydrate(Forest::class, [
             'trees' => [
                 [
-                    'name' => 'foo',
+                    'name'   => 'foo',
                     'leaves' => [
                         'n' => 100,
                     ],
@@ -937,7 +937,7 @@ class HydratorTest extends TestCase
                     ],
                 ],
                 [
-                    'name' => 'foo2',
+                    'name'   => 'foo2',
                     'leaves' => [
                         'n' => 200,
                     ],
@@ -1003,7 +1003,7 @@ class HydratorTest extends TestCase
     public function testMutateProperty(): void
     {
         $object = (new Hydrator())->hydrate(Fixtures\ObjectWithArrayToDeserialize::class, [
-            'name' => 'foo',
+            'name'  => 'foo',
             'value' => json_encode(['foo' => 'bar'], JSON_THROW_ON_ERROR),
         ]);
 
@@ -1015,9 +1015,9 @@ class HydratorTest extends TestCase
     public function testHydrateAdditionalWithMagicMethod()
     {
         $object = (new Hydrator())->hydrate(Fixtures\ObjectWithMagicSet::class, [
-            'name' => 'foo',
-            'value' => 'bar',
-            'type' => false,
+            'name'   => 'foo',
+            'value'  => 'bar',
+            'type'   => false,
             'number' => 42,
         ]);
 
@@ -1037,7 +1037,7 @@ class HydratorTest extends TestCase
 
         $object = (new Hydrator($container))->hydrate(Audi::class, [
             'model' => 'A4',
-            'year' => 2021,
+            'year'  => 2021,
         ]);
 
         $this->assertSame('A4', $object->model);
