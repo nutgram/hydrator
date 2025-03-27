@@ -17,13 +17,12 @@ final class OverrideConstructor
     {
     }
 
-
     public function getArguments(mixed $object, ContainerInterface $container): array
     {
         $method = new ReflectionMethod($object, $this->method);
 
         return array_map(
-            static fn($parameter) => $container->get($parameter->getType()?->getName()),
+            static fn ($parameter) => $container->get($parameter->getType()?->getName()),
             $method->getParameters()
         );
     }
