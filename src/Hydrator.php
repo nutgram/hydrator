@@ -19,6 +19,7 @@ use SergiX44\Hydrator\Annotation\Alias;
 use SergiX44\Hydrator\Annotation\ArrayType;
 use SergiX44\Hydrator\Annotation\ConcreteResolver;
 use SergiX44\Hydrator\Annotation\Mutate;
+use SergiX44\Hydrator\Annotation\OverrideConstructor;
 use SergiX44\Hydrator\Annotation\SkipConstructor;
 use SergiX44\Hydrator\Annotation\UnionResolver;
 use SergiX44\Hydrator\Exception\InvalidObjectException;
@@ -274,6 +275,15 @@ class Hydrator implements HydratorInterface
         }
 
         if ($this->container !== null) {
+            $overrideConstructor = $this->getAttributeInstance($reflectionClass, OverrideConstructor::class);
+            if ($overrideConstructor !== null) {
+                $obj = $reflectionClass->newInstanceWithoutConstructor();
+                $args = $overrideConstructor->getArguments($obj, $this->container);
+                call_user_func([$obj, $overrideConstructor->method], ...$args);
+
+                return $obj;
+            }
+
             return $this->container->get($object);
         }
 

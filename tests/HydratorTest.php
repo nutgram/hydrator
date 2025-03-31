@@ -21,7 +21,9 @@ use SergiX44\Hydrator\Tests\Fixtures\Resolver\AppleResolver;
 use SergiX44\Hydrator\Tests\Fixtures\Store\Apple;
 use SergiX44\Hydrator\Tests\Fixtures\Store\AppleJack;
 use SergiX44\Hydrator\Tests\Fixtures\Store\AppleSauce;
+use SergiX44\Hydrator\Tests\Fixtures\Store\Audi;
 use SergiX44\Hydrator\Tests\Fixtures\Store\Fruit;
+use SergiX44\Hydrator\Tests\Fixtures\Store\Key;
 use SergiX44\Hydrator\Tests\Fixtures\Store\RottenApple;
 use SergiX44\Hydrator\Tests\Fixtures\Store\Tag;
 use SergiX44\Hydrator\Tests\Fixtures\Store\TagPrice;
@@ -491,11 +493,13 @@ class HydratorTest extends TestCase
 
     public function testHydrateArrayOfStringableEnumProperty(): void
     {
-        $object = (new Hydrator())->hydrate(Fixtures\ObjectWithArrayOfStringableEnum::class, ['value' => [
-            'c1200a7e-136e-4a11-9bc3-cc937046e90f',
-            'a2b29b37-1c5a-4b36-9981-097ddd25c740',
-            'c1ea3762-9827-4c0c-808b-53be3febae6d',
-        ]]);
+        $object = (new Hydrator())->hydrate(Fixtures\ObjectWithArrayOfStringableEnum::class, [
+            'value' => [
+                'c1200a7e-136e-4a11-9bc3-cc937046e90f',
+                'a2b29b37-1c5a-4b36-9981-097ddd25c740',
+                'c1ea3762-9827-4c0c-808b-53be3febae6d',
+            ],
+        ]);
 
         $this->assertSame([
             Fixtures\StringableEnum::foo,
@@ -506,12 +510,14 @@ class HydratorTest extends TestCase
 
     public function testHydrateArrayOfStringableEnumPropertyWithoutMatchingEnum(): void
     {
-        $object = (new Hydrator())->hydrate(Fixtures\ObjectWithArrayOfStringableEnum::class, ['value' => [
-            'c1200a7e-136e-4a11-9bc3-cc937046e90f',
-            'a2b29b37-1c5a-4b36-9981-097ddd25c740',
-            'c1ea3762-9827-4c0c-808b-53be3febae6d',
-            'bbb',
-        ]]);
+        $object = (new Hydrator())->hydrate(Fixtures\ObjectWithArrayOfStringableEnum::class, [
+            'value' => [
+                'c1200a7e-136e-4a11-9bc3-cc937046e90f',
+                'a2b29b37-1c5a-4b36-9981-097ddd25c740',
+                'c1ea3762-9827-4c0c-808b-53be3febae6d',
+                'bbb',
+            ],
+        ]);
 
         $this->assertSame([
             Fixtures\StringableEnum::foo,
@@ -829,11 +835,13 @@ class HydratorTest extends TestCase
     public function testHydrateArrayAbstractProperty(): void
     {
         $o = (new Hydrator())->hydrate(new ObjectWithArrayOfAbstracts(), [
-            'value' => [[
-                'type'      => 'jack',
-                'sweetness' => null,
-                'category'  => 'brandy',
-            ]],
+            'value' => [
+                [
+                    'type'      => 'jack',
+                    'sweetness' => null,
+                    'category'  => 'brandy',
+                ],
+            ],
         ]);
 
         $this->assertInstanceOf(ObjectWithArrayOfAbstracts::class, $o);
@@ -849,11 +857,13 @@ class HydratorTest extends TestCase
     public function testHydrateArrayAbstractPropertyWithObject(): void
     {
         $o = (new Hydrator())->hydrate(new ObjectWithArrayOfAbstracts(), [
-            'value' => [(object) [
-                'type'      => 'jack',
-                'sweetness' => null,
-                'category'  => 'brandy',
-            ]],
+            'value' => [
+                (object) [
+                    'type'      => 'jack',
+                    'sweetness' => null,
+                    'category'  => 'brandy',
+                ],
+            ],
         ]);
 
         $this->assertInstanceOf(ObjectWithArrayOfAbstracts::class, $o);
@@ -1016,6 +1026,24 @@ class HydratorTest extends TestCase
         $this->assertSame('bar', $object->value);
         $this->assertFalse($object->type);
         $this->assertSame(42, $object->number);
+    }
+
+    public function testHydrateWithOverrideConstructor()
+    {
+        $container = new Container();
+        $key = new Key();
+        $container->bind(Key::class, function () use ($key) {
+            return $key;
+        });
+
+        $object = (new Hydrator($container))->hydrate(Audi::class, [
+            'model' => 'A4',
+            'year'  => 2021,
+        ]);
+
+        $this->assertSame('A4', $object->model);
+        $this->assertSame(2021, $object->year);
+        $this->assertSame($key, $object->key);
     }
 
     public function testHydrateWithAnonymousResolver()

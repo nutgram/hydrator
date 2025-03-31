@@ -10,7 +10,7 @@ class Tree
 
     public Leaves $leaves;
 
-    private Sun|null $sun = null;
+    private ?Sun $sun = null;
 
     public function __construct(?Sun $sun = null)
     {

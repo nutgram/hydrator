@@ -6,7 +6,7 @@ class Wood
 {
     public int $kg;
 
-    private Sun|null $sun = null;
+    private ?Sun $sun = null;
 
     public function __construct(?Sun $sun = null)
     {
