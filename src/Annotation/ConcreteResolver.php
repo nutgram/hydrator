@@ -14,11 +14,11 @@ abstract class ConcreteResolver
     protected array $concretes = [];
 
     /**
-     * @param array $data
-     *
+     * @param  array  $data
+     * @param  array  $all
      * @return string|null
      */
-    abstract public function concreteFor(array $data): ?string;
+    abstract public function concreteFor(array $data, array $all): ?string;
 
     /**
      * @return array

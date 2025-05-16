@@ -23,7 +23,6 @@ use SergiX44\Hydrator\Annotation\OverrideConstructor;
 use SergiX44\Hydrator\Annotation\SkipConstructor;
 use SergiX44\Hydrator\Annotation\UnionResolver;
 use SergiX44\Hydrator\Exception\InvalidObjectException;
-
 use function array_key_exists;
 use function class_exists;
 use function ctype_digit;
@@ -39,7 +38,6 @@ use function is_string;
 use function is_subclass_of;
 use function sprintf;
 use function strtotime;
-
 use const FILTER_NULL_ON_FAILURE;
 use const FILTER_VALIDATE_BOOLEAN;
 use const FILTER_VALIDATE_FLOAT;
@@ -59,6 +57,7 @@ class Hydrator implements HydratorInterface
      *
      * @param class-string<T>|T $object
      * @param array|object      $data
+     * @param array            $additional
      *
      * @throws Exception\UnsupportedPropertyTypeException
      *                                                    If one of the object properties contains an unsupported type.
@@ -77,13 +76,13 @@ class Hydrator implements HydratorInterface
      *
      * @template T of object
      */
-    public function hydrate(string|object $object, array|object $data): object
+    public function hydrate(string|object $object, array|object $data, array $additional = []): object
     {
         if (is_object($data)) {
             $data = get_object_vars($data);
         }
 
-        $object = $this->initializeObject($object, $data);
+        $object = $this->initializeObject($object, $data, $additional);
 
         $class = new ReflectionClass($object);
         foreach ($class->getProperties() as $property) {
@@ -147,7 +146,7 @@ class Hydrator implements HydratorInterface
                 $data[$key] = $mutator->apply($data[$key]);
             }
 
-            $this->hydrateProperty($object, $class, $property, $propertyType, $data[$key]);
+            $this->hydrateProperty($object, $class, $property, $propertyType, $data[$key], $data);
             unset($data[$key]);
         }
 
@@ -215,6 +214,8 @@ class Hydrator implements HydratorInterface
      * Initializes the given object.
      *
      * @param class-string<T>|T $object
+     * @param array|object      $data
+     * @param array            $additional
      *
      * @throws ContainerExceptionInterface
      *                                     If the object cannot be initialized.
@@ -224,7 +225,7 @@ class Hydrator implements HydratorInterface
      *
      * @template T
      */
-    private function initializeObject(string|object $object, array|object $data): object
+    private function initializeObject(string|object $object, array|object $data, array $additional = []): object
     {
         if (is_object($object)) {
             return $object;
@@ -257,7 +258,7 @@ class Hydrator implements HydratorInterface
                 $data = get_object_vars($data);
             }
 
-            return $this->initializeObject($attribute->concreteFor($data), $data);
+            return $this->initializeObject($attribute->concreteFor($data, $additional), $data);
         }
 
         // if we have a container, get the instance through it
@@ -336,7 +337,8 @@ class Hydrator implements HydratorInterface
         ReflectionClass $class,
         ReflectionProperty $property,
         ReflectionNamedType $type,
-        mixed $value
+        mixed $value,
+        array $additional = []
     ): void {
         $propertyType = $type->getName();
 
@@ -357,7 +359,7 @@ class Hydrator implements HydratorInterface
 
             'string' === $propertyType => $this->propertyString($object, $class, $property, $type, $value),
 
-            'array' === $propertyType => $this->propertyArray($object, $class, $property, $type, $value),
+            'array' === $propertyType => $this->propertyArray($object, $class, $property, $type, $value, $additional),
 
             'object' === $propertyType => $this->propertyObject($object, $class, $property, $type, $value),
 
@@ -382,7 +384,7 @@ class Hydrator implements HydratorInterface
                 BackedEnum::class
             ) => $this->propertyBackedEnum($object, $class, $property, $type, $value),
 
-            class_exists($propertyType) => $this->propertyFromInstance($object, $class, $property, $type, $value),
+            class_exists($propertyType) => $this->propertyFromInstance($object, $class, $property, $type, $value, $additional),
 
             default => throw new Exception\UnsupportedPropertyTypeException(sprintf(
                 'The %s.%s property contains an unsupported type %s.',
@@ -593,7 +595,8 @@ class Hydrator implements HydratorInterface
         ReflectionClass $class,
         ReflectionProperty $property,
         ReflectionNamedType $type,
-        mixed $value
+        mixed $value,
+        array $additional = []
     ): void {
         if (is_object($value)) {
             $value = get_object_vars($value);
@@ -609,7 +612,7 @@ class Hydrator implements HydratorInterface
 
         $arrayType = $this->getAttributeInstance($property, ArrayType::class);
         if ($arrayType !== null) {
-            $value = $this->hydrateObjectsInArray($value, $arrayType->class, $arrayType->depth);
+            $value = $this->hydrateObjectsInArray($value, $arrayType->class, $arrayType->depth, $additional);
         }
 
         $property->setValue($object, $value);
@@ -624,20 +627,20 @@ class Hydrator implements HydratorInterface
      *
      * @return array
      */
-    private function hydrateObjectsInArray(array $array, string $class, int $depth): array
+    private function hydrateObjectsInArray(array $array, string $class, int $depth, array $additional = []): array
     {
         if ($depth > 1) {
-            return array_map(function ($child) use ($class, $depth) {
-                return $this->hydrateObjectsInArray($child, $class, --$depth);
+            return array_map(function ($child) use ($class, $depth, $additional) {
+                return $this->hydrateObjectsInArray($child, $class, --$depth, $additional);
             }, $array);
         }
 
-        return array_map(function ($object) use ($class) {
+        return array_map(function ($object) use ($class, $additional) {
             if (is_subclass_of($class, BackedEnum::class)) {
                 return $class::tryFrom($object) ?? $object;
             }
 
-            return $this->hydrate($class, $object);
+            return $this->hydrate($class, $object, $additional);
         }, $array);
     }
 
@@ -838,7 +841,8 @@ class Hydrator implements HydratorInterface
         ReflectionClass $class,
         ReflectionProperty $property,
         ReflectionNamedType $type,
-        mixed $value
+        mixed $value,
+        array $additional = []
     ): void {
         if (!is_array($value) && !is_object($value)) {
             throw new Exception\InvalidValueException($property, sprintf(
@@ -848,6 +852,6 @@ class Hydrator implements HydratorInterface
             ));
         }
 
-        $property->setValue($object, $this->hydrate($type->getName(), $value));
+        $property->setValue($object, $this->hydrate($type->getName(), $value, $additional));
     }
 }

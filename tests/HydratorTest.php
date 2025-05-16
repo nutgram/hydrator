@@ -831,6 +831,23 @@ class HydratorTest extends TestCase
         $this->assertSame('brandy', $o->value->category);
     }
 
+    public function testHydrateAbstractPropertyWithAdditional(): void
+    {
+        $o = (new Hydrator())->hydrate(new ObjectWithAbstract(), [
+            'name' => 'notApple',
+            'value' => [
+                'type'      => 'jack',
+                'sweetness' => null,
+                'category'  => 'brandy',
+            ],
+        ]);
+
+        $this->assertInstanceOf(ObjectWithAbstract::class, $o);
+        $this->assertInstanceOf(AppleJack::class, $o->value);
+        $this->assertSame('jack', $o->value->type);
+        $this->assertSame('brandy', $o->value->category);
+    }
+
     public function testHydrateArrayAbstractProperty(): void
     {
         $o = (new Hydrator())->hydrate(new ObjectWithArrayOfAbstracts(), [
