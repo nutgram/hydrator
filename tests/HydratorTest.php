@@ -846,6 +846,7 @@ class HydratorTest extends TestCase
         $this->assertInstanceOf(AppleJack::class, $o->value);
         $this->assertSame('jack', $o->value->type);
         $this->assertSame('brandy', $o->value->category);
+        $this->assertSame('notApple', $o->name);
     }
 
     public function testHydrateArrayAbstractProperty(): void
