@@ -834,7 +834,7 @@ class HydratorTest extends TestCase
     public function testHydrateAbstractPropertyWithAdditional(): void
     {
         $o = (new Hydrator())->hydrate(new ObjectWithAbstract(), [
-            'name' => 'notApple',
+            'name'  => 'notApple',
             'value' => [
                 'type'      => 'jack',
                 'sweetness' => null,

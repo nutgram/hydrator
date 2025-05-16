@@ -23,6 +23,7 @@ use SergiX44\Hydrator\Annotation\OverrideConstructor;
 use SergiX44\Hydrator\Annotation\SkipConstructor;
 use SergiX44\Hydrator\Annotation\UnionResolver;
 use SergiX44\Hydrator\Exception\InvalidObjectException;
+
 use function array_key_exists;
 use function class_exists;
 use function ctype_digit;
@@ -38,6 +39,7 @@ use function is_string;
 use function is_subclass_of;
 use function sprintf;
 use function strtotime;
+
 use const FILTER_NULL_ON_FAILURE;
 use const FILTER_VALIDATE_BOOLEAN;
 use const FILTER_VALIDATE_FLOAT;
@@ -57,7 +59,7 @@ class Hydrator implements HydratorInterface
      *
      * @param class-string<T>|T $object
      * @param array|object      $data
-     * @param array            $additional
+     * @param array             $additional
      *
      * @throws Exception\UnsupportedPropertyTypeException
      *                                                    If one of the object properties contains an unsupported type.
@@ -215,7 +217,7 @@ class Hydrator implements HydratorInterface
      *
      * @param class-string<T>|T $object
      * @param array|object      $data
-     * @param array            $additional
+     * @param array             $additional
      *
      * @throws ContainerExceptionInterface
      *                                     If the object cannot be initialized.
