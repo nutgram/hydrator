@@ -23,7 +23,6 @@ use SergiX44\Hydrator\Annotation\OverrideConstructor;
 use SergiX44\Hydrator\Annotation\SkipConstructor;
 use SergiX44\Hydrator\Annotation\UnionResolver;
 use SergiX44\Hydrator\Exception\InvalidObjectException;
-
 use function array_key_exists;
 use function class_exists;
 use function ctype_digit;
@@ -39,7 +38,6 @@ use function is_string;
 use function is_subclass_of;
 use function sprintf;
 use function strtotime;
-
 use const FILTER_NULL_ON_FAILURE;
 use const FILTER_VALIDATE_BOOLEAN;
 use const FILTER_VALIDATE_FLOAT;
@@ -85,8 +83,8 @@ class Hydrator implements HydratorInterface
         }
 
         $object = $this->initializeObject($object, $data, $additional);
-
         $class = new ReflectionClass($object);
+        $keys = [];
         foreach ($class->getProperties() as $property) {
             // statical properties cannot be hydrated...
             if ($property->isStatic()) {
@@ -149,13 +147,15 @@ class Hydrator implements HydratorInterface
             }
 
             $this->hydrateProperty($object, $class, $property, $propertyType, $data[$key], $data);
-            unset($data[$key]);
+            $keys[] = $key;
         }
+
+        $data = array_diff_key($data, array_flip($keys));
 
         // if the object has a __set method, we will use it to hydrate the remaining data
         if (!empty($data) && $class->hasMethod('__set')) {
             foreach ($data as $key => $value) {
-                $object->$key = $value;
+                $object->__set($key, $value);
             }
         }
 
