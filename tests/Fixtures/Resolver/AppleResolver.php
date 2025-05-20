@@ -15,7 +15,7 @@ class AppleResolver extends ConcreteResolver
         'sauce' => AppleSauce::class,
     ];
 
-    public function concreteFor(array $data): ?string
+    public function concreteFor(array $data, array $all): ?string
     {
         return $this->concretes[$data['type']] ?? null;
     }
