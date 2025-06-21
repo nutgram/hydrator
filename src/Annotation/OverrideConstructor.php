@@ -5,6 +5,7 @@ namespace SergiX44\Hydrator\Annotation;
 use Attribute;
 use Psr\Container\ContainerInterface;
 use ReflectionMethod;
+use ReflectionParameter;
 
 /**
  * @Annotation
@@ -22,7 +23,19 @@ final class OverrideConstructor
         $method = new ReflectionMethod($object, $this->method);
 
         return array_map(
-            static fn ($parameter) => $container->get($parameter->getType()?->getName()),
+            static function (ReflectionParameter $parameter) use ($container) {
+                if (!$container->has($parameter->getType()?->getName())) {
+                    if ($parameter->isDefaultValueAvailable()) {
+                        return $parameter->getDefaultValue();
+                    }
+
+                    if ($parameter->allowsNull()) {
+                        return null;
+                    }
+                }
+
+                return $container->get($parameter->getType()?->getName());
+            },
             $method->getParameters()
         );
     }
