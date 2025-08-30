@@ -29,7 +29,7 @@ class EnumOrScalar extends UnionResolver
             );
         }
 
-        $value = $data[$propertyName] ?? array_shift($data);
+        $value = array_key_exists($propertyName, $data) ? $data[$propertyName] : array_shift($data);
         if ((is_string($value) || is_int($value)) && $enumClass::tryFrom($value) !== null) {
             return $enum;
         }
