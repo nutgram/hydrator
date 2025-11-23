@@ -3,13 +3,14 @@
 namespace SergiX44\Hydrator\Annotation;
 
 use Attribute;
+use RuntimeException;
 
 /**
  * @Annotation
  * @Target({"CLASS"})
  */
 #[Attribute(Attribute::TARGET_CLASS)]
-abstract class ConcreteResolver
+class ConcreteResolver
 {
     protected array $concretes = [];
 
@@ -19,7 +20,10 @@ abstract class ConcreteResolver
      *
      * @return string|null
      */
-    abstract public function concreteFor(array $data, array $all): ?string;
+    public function concreteFor(array $data, array $all): ?string
+    {
+        throw new RuntimeException('This class is meant to be extended to provide your own ConcreteResolver logic.');
+    }
 
     /**
      * @return array

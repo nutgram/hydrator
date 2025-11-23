@@ -246,7 +246,7 @@ class HydratorTest extends TestCase
         $this->assertSame($expected, $object->value);
     }
 
-    public function booleanValueProvider(): array
+    public static function booleanValueProvider(): array
     {
         return [
             [true, true],
@@ -280,7 +280,7 @@ class HydratorTest extends TestCase
         $this->assertSame($expected, $object->value);
     }
 
-    public function integerValueProvider(): array
+    public static function integerValueProvider(): array
     {
         return [
             [42, 42],
@@ -306,7 +306,7 @@ class HydratorTest extends TestCase
         $this->assertSame($expected, $object->value);
     }
 
-    public function numberValueProvider(): array
+    public static function numberValueProvider(): array
     {
         return [
             [42, 42.0],
@@ -438,7 +438,7 @@ class HydratorTest extends TestCase
         $this->assertSame($expected, $object->value->format('Y-m-d'));
     }
 
-    public function timestampValueProvider(): array
+    public static function timestampValueProvider(): array
     {
         return [
             [1262304000, '2010-01-01'],
@@ -577,7 +577,7 @@ class HydratorTest extends TestCase
         $this->assertSame($expected, $object->value);
     }
 
-    public function stringableEnumValueProvider(): array
+    public static function stringableEnumValueProvider(): array
     {
         return [
             ['c1200a7e-136e-4a11-9bc3-cc937046e90f', Fixtures\StringableEnum::foo],
@@ -615,7 +615,7 @@ class HydratorTest extends TestCase
         $this->assertSame($expected, $object->value);
     }
 
-    public function numerableEnumValueProvider(): array
+    public static function numerableEnumValueProvider(): array
     {
         return [
             [1, Fixtures\NumerableEnum::foo],

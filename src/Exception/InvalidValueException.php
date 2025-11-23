@@ -4,7 +4,6 @@ namespace SergiX44\Hydrator\Exception;
 
 use ReflectionProperty;
 use Throwable;
-
 use function sprintf;
 
 class InvalidValueException extends HydrationException
@@ -32,7 +31,6 @@ class InvalidValueException extends HydrationException
     ) {
         parent::__construct($message, $code, $previous);
 
-        $property->setAccessible(false);
         $this->property = $property;
     }
 

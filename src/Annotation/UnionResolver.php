@@ -6,13 +6,14 @@ use Attribute;
 use ReflectionException;
 use ReflectionNamedType;
 use ReflectionType;
+use RuntimeException;
 
 /**
  * @Annotation
  * @Target({"PROPERTY"})
  */
 #[Attribute(Attribute::TARGET_PROPERTY)]
-abstract class UnionResolver
+class UnionResolver
 {
     /**
      * @param string                $propertyName
@@ -23,5 +24,8 @@ abstract class UnionResolver
      *
      * @return ReflectionType
      */
-    abstract public function resolve(string $propertyName, array $propertyTypes, array $data): ReflectionType;
+    public function resolve(string $propertyName, array $propertyTypes, array $data): ReflectionType
+    {
+        throw new RuntimeException('This class is meant to be extended to provide your own UnionResolver logic.');
+    }
 }
