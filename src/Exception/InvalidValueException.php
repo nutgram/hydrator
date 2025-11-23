@@ -32,7 +32,6 @@ class InvalidValueException extends HydrationException
     ) {
         parent::__construct($message, $code, $previous);
 
-        $property->setAccessible(false);
         $this->property = $property;
     }
 
