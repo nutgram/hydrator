@@ -12,6 +12,7 @@ use Psr\Container\ContainerInterface;
 use ReflectionAttribute;
 use ReflectionClass;
 use ReflectionEnum;
+use ReflectionException;
 use ReflectionNamedType;
 use ReflectionProperty;
 use ReflectionUnionType;
@@ -235,16 +236,16 @@ class Hydrator implements HydratorInterface
             return $object;
         }
 
-        if (!is_string($object) || !class_exists($object)) {
+        try {
+            $reflectionClass = new ReflectionClass($object);
+        } catch (ReflectionException) {
             throw new InvalidArgumentException(sprintf(
                 'The %s::hydrate() method expects an object or name of an existing class.',
                 __CLASS__
             ));
         }
 
-        $reflectionClass = new ReflectionClass($object);
-
-        if ($reflectionClass->isAbstract()) {
+        if ($reflectionClass->isAbstract() || $reflectionClass->isInterface()) {
             $attribute = $this->getAttributeInstance(
                 $reflectionClass,
                 ConcreteResolver::class,
@@ -389,6 +390,8 @@ class Hydrator implements HydratorInterface
             ) => $this->propertyBackedEnum($object, $class, $property, $type, $value),
 
             class_exists($propertyType) => $this->propertyFromInstance($object, $class, $property, $type, $value, $additional),
+
+            interface_exists($propertyType) => $this->propertyFromInstance($object, $class, $property, $type, $value, $additional),
 
             default => throw new Exception\UnsupportedPropertyTypeException(sprintf(
                 'The %s.%s property contains an unsupported type %s.',
