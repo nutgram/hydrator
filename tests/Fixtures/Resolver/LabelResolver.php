@@ -11,7 +11,7 @@ use SergiX44\Hydrator\Tests\Fixtures\Store\SmallLabel;
 class LabelResolver extends ConcreteResolver
 {
     protected array $concretes = [
-        'big'  => BigLabel::class,
+        'big'   => BigLabel::class,
         'small' => SmallLabel::class,
     ];
 
