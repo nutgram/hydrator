@@ -17,6 +17,8 @@ use SergiX44\Hydrator\Tests\Fixtures\DI\Wood;
 use SergiX44\Hydrator\Tests\Fixtures\ObjectWithAbstract;
 use SergiX44\Hydrator\Tests\Fixtures\ObjectWithArrayOfAbstracts;
 use SergiX44\Hydrator\Tests\Fixtures\ObjectWithInvalidAbstract;
+use SergiX44\Hydrator\Tests\Fixtures\ObjectWithLabel;
+use SergiX44\Hydrator\Tests\Fixtures\ObjectWithLabels;
 use SergiX44\Hydrator\Tests\Fixtures\Resolver\AppleResolver;
 use SergiX44\Hydrator\Tests\Fixtures\Store\Apple;
 use SergiX44\Hydrator\Tests\Fixtures\Store\AppleJack;
@@ -24,6 +26,7 @@ use SergiX44\Hydrator\Tests\Fixtures\Store\AppleSauce;
 use SergiX44\Hydrator\Tests\Fixtures\Store\Audi;
 use SergiX44\Hydrator\Tests\Fixtures\Store\Fruit;
 use SergiX44\Hydrator\Tests\Fixtures\Store\Key;
+use SergiX44\Hydrator\Tests\Fixtures\Store\SmallLabel;
 use SergiX44\Hydrator\Tests\Fixtures\Store\Tag;
 use SergiX44\Hydrator\Tests\Fixtures\Store\TagPrice;
 use TypeError;
@@ -1061,5 +1064,35 @@ class HydratorTest extends TestCase
         $this->assertSame('A4', $object->model);
         $this->assertSame(2021, $object->year);
         $this->assertSame($key, $object->key);
+    }
+
+    public function testHydrateObjectWithInterface(): void
+    {
+        $obj = (new Hydrator())->hydrate(ObjectWithLabel::class, [
+            'label' => [
+                'type' => 'small',
+                'name' => 'apple',
+            ],
+        ]);
+
+        $this->assertInstanceOf(ObjectWithLabel::class, $obj);
+        $this->assertInstanceOf(SmallLabel::class, $obj->label);
+        $this->assertSame('apple', $obj->label->name);
+    }
+
+    public function testHydrateObjectWithArrayInterface(): void
+    {
+        $items = (new Hydrator())->hydrate(ObjectWithLabels::class, [
+            'labels' => [
+                [
+                    'type' => 'small',
+                    'name' => 'apple',
+                ],
+            ],
+        ]);
+
+        $this->assertInstanceOf(ObjectWithLabels::class, $items);
+        $this->assertInstanceOf(SmallLabel::class, $items->labels[0]);
+        $this->assertSame('apple', $items->labels[0]->name);
     }
 }
