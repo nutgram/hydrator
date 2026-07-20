@@ -163,6 +163,26 @@ public array $value;
 ],
 ```
 
+By default, every element of the array is hydrated into the given class, so a
+scalar element (or `null`) will raise an error. Set `skipScalars: true` to leave
+scalar and `null` elements untouched, hydrating only the array/object elements:
+
+```php
+#[ArrayType(SomeDto::class, skipScalars: true)]
+public array $value;
+```
+
+```php
+[
+    'value' => [
+        ['value' => 'foo'], // hydrated into SomeDto
+        'bar',              // kept as-is
+        42,                 // kept as-is
+        null,               // kept as-is
+    ],
+],
+```
+
 ## Object
 
 Accepts only objects.

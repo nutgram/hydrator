@@ -36,6 +36,7 @@ use function is_bool;
 use function is_float;
 use function is_int;
 use function is_object;
+use function is_scalar;
 use function is_string;
 use function is_subclass_of;
 use function sprintf;
@@ -619,7 +620,13 @@ class Hydrator implements HydratorInterface
 
         $arrayType = $this->getAttributeInstance($property, ArrayType::class);
         if ($arrayType !== null) {
-            $value = $this->hydrateObjectsInArray($value, $arrayType->class, $arrayType->depth, $additional);
+            $value = $this->hydrateObjectsInArray(
+                $value,
+                $arrayType->class,
+                $arrayType->depth,
+                $arrayType->skipScalars,
+                $additional
+            );
         }
 
         $property->setValue($object, $value);
@@ -629,22 +636,36 @@ class Hydrator implements HydratorInterface
      * @param array  $array
      * @param string $class
      * @param int    $depth
+     * @param bool   $skipScalars
      *
      * @throws \ReflectionException
      *
      * @return array
      */
-    private function hydrateObjectsInArray(array $array, string $class, int $depth, array $additional = []): array
-    {
+    private function hydrateObjectsInArray(
+        array $array,
+        string $class,
+        int $depth,
+        bool $skipScalars = false,
+        array $additional = []
+    ): array {
         if ($depth > 1) {
-            return array_map(function ($child) use ($class, $depth, $additional) {
-                return $this->hydrateObjectsInArray($child, $class, --$depth, $additional);
+            return array_map(function ($child) use ($class, $depth, $skipScalars, $additional) {
+                if ($skipScalars && (is_scalar($child) || $child === null)) {
+                    return $child;
+                }
+
+                return $this->hydrateObjectsInArray($child, $class, --$depth, $skipScalars, $additional);
             }, $array);
         }
 
-        return array_map(function ($object) use ($class, $additional) {
+        return array_map(function ($object) use ($class, $skipScalars, $additional) {
             if (is_subclass_of($class, BackedEnum::class)) {
                 return $class::tryFrom($object) ?? $object;
+            }
+
+            if ($skipScalars && (is_scalar($object) || $object === null)) {
+                return $object;
             }
 
             return $this->hydrate($class, $object, $additional);

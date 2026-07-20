@@ -20,13 +20,22 @@ final class ArrayType
     public int $depth;
 
     /**
+     * When true, scalar (and null) array elements are passed through as-is
+     * instead of being hydrated into the target class.
+     *
+     * @var bool
+     */
+    public bool $skipScalars;
+
+    /**
      * Constructor of the class.
      *
      * @param class-string $class
      */
-    public function __construct(string $class, int $depth = 1)
+    public function __construct(string $class, int $depth = 1, bool $skipScalars = false)
     {
         $this->class = $class;
         $this->depth = $depth;
+        $this->skipScalars = $skipScalars;
     }
 }
