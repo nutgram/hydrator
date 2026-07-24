@@ -396,6 +396,41 @@ class HydratorTest extends TestCase
         $this->assertSame('fif', $object->value[1][1]->name);
     }
 
+    public function testHydrateTypedArrayablePropertySkippingScalars(): void
+    {
+        $object = (new Hydrator())->hydrate(Fixtures\ObjectWithTypedArraySkippingScalars::class, [
+            'value' => [
+                ['name' => 'foo'],
+                'bar',
+                42,
+                3.14,
+                true,
+                null,
+            ],
+        ]);
+
+        $this->assertIsArray($object->value);
+        $this->assertInstanceOf(Tag::class, $object->value[0]);
+        $this->assertSame('foo', $object->value[0]->name);
+        $this->assertSame('bar', $object->value[1]);
+        $this->assertSame(42, $object->value[2]);
+        $this->assertSame(3.14, $object->value[3]);
+        $this->assertTrue($object->value[4]);
+        $this->assertNull($object->value[5]);
+    }
+
+    public function testHydrateTypedArrayablePropertyWithoutSkippingScalarsFailsOnScalar(): void
+    {
+        $this->expectException(\TypeError::class);
+
+        (new Hydrator())->hydrate(Fixtures\ObjectWithTypedArray::class, [
+            'value' => [
+                ['name' => 'foo'],
+                'bar',
+            ],
+        ]);
+    }
+
     public function testHydrateArrayablePropertyWithInvalidValue(): void
     {
         $this->expectException(Exception\InvalidValueException::class);
